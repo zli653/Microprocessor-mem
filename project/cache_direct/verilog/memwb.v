@@ -4,14 +4,14 @@ module memwb (
 	instructout, RegWrite_todec, RegDst_todec, Halt_tof,
 	//Input
 	ALUOut, PCInc, MemOut, PCtoReg, MemtoReg, Cond, Set, rst, clk, en, 
-	instructin, RegWrite, RegDst, Halt
+	instructin, RegWrite, RegDst, Halt, Dmem_Stall
 	);
 	
 	output [15:0] PCInc_towb, MemOut_towb, ALUOut_towb, instructout;
 	output PCtoReg_towb, MemtoReg_towb, Cond_towb, Set_towb, RegWrite_todec, Halt_tof;
 	output [1:0] RegDst_todec;
 	input [15:0] PCInc, MemOut, ALUOut, instructin;
-	input PCtoReg, MemtoReg, Cond, Set, rst, clk, en, RegWrite, Halt;
+	input PCtoReg, MemtoReg, Cond, Set, rst, clk, en, RegWrite, Halt, Dmem_Stall;
 	input [1:0] RegDst;
 
 	wire [15:0] instructInt;
@@ -34,5 +34,5 @@ module memwb (
 	
 	dff_wrapper b_7(.q(Halt_tof), .d(Halt), .en(en), .clk(clk), .rst(rst));
 	
-	assign instructout = (rst) ? 16'b0000100000000000 : instructInt;
+	assign instructout = (rst | Dmem_Stall) ? 16'b0000100000000000 : instructInt;
 endmodule

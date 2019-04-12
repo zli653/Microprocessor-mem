@@ -75,6 +75,7 @@ module proc (/*AUTOARG*/
 
 	// Memory
 	wire [15:0] MemOut;
+	wire Dmem_Stall;
 
 	// Mem to Wb
 	wire PCtoReg_towb, MemtoReg_towb, Cond_towb, Set_towb;
@@ -155,11 +156,11 @@ module proc (/*AUTOARG*/
 		);
 
 	// Instantiate the memory stage
-	memory MemoryStage(.MemOut(MemOut), .ReadData2(ReadData2_tomem), .ALUOut(ALUOut_tomem), .C_DMemEn(DMemEn_tomem), .C_DMemWrite(DMemWrite_tomem), .C_DMemDump(DMemDump_tomem), .clk(clk), .rst(rst), .err(err_mem));
+	memory MemoryStage(.MemOut(MemOut), .ReadData2(ReadData2_tomem), .ALUOut(ALUOut_tomem), .C_DMemEn(DMemEn_tomem), .C_DMemWrite(DMemWrite_tomem), .C_DMemDump(DMemDump_tomem), .clk(clk), .rst(rst), .err(err_mem), .Dmem_Stall(Dmem_Stall));
 
 	//Instantiate mem to writeback
 
-	memwb MemToWb(.PCInc_towb(PCInc_towb), .MemOut_towb(MemOut_towb), .PCtoReg_towb(PCtoReg_towb),
+	memwb MemToWb(.Dmem_Stall(Dmem_Stall), .PCInc_towb(PCInc_towb), .MemOut_towb(MemOut_towb), .PCtoReg_towb(PCtoReg_towb),
 	       	.MemtoReg_towb(MemtoReg_towb), .Cond_towb(Cond_towb), .Set_towb(Set_towb), .ALUOut_towb(ALUOut_towb), .ALUOut(ALUOut_tomem),
 		.PCInc(PCInc_tomem), .MemOut(MemOut), .PCtoReg(PCtoReg_tomem), .MemtoReg(MemtoReg_tomem), .Halt(Halt_tomem),
 		.Cond(Cond_tomem), .Set(Set_tomem), .rst(rst), .clk(clk), .en(1'b1), .instructin(MemInstr), .RegDst(RegDst_tomem), .RegWrite(RegWrite_tomem),

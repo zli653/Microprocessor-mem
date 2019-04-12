@@ -40,10 +40,8 @@ module fetch (
 
 	assign mux1_ctrl = PCImm | Jump | (PCSrc & Cond);
 	assign mux1_out = mux1_ctrl ? Branch_PC : PCInc;
-	assign mux2_out = (~En | Halt) ? PCIn : mux1_out;
-	assign PCCur = rst ? 16'h0000 : 
-		~nop ? mux2_out:
-		mux1_ctrl ? Branch_PC : PCIn;	
+	assign mux2_out = (~En | Halt | (Stall & ~mux1_ctrl)) ? PCIn : mux1_out;
+	assign PCCur = rst ? 16'h0000 : mux2_out;
 	
 	reg_16b pc_reg (.clk(clk),.rst(rst),.writeData(PCCur),.readData(PCIn));
 	
