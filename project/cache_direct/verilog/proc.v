@@ -102,10 +102,10 @@ module proc (/*AUTOARG*/
 	wire Lbi, nop;
 
 	// Instantiate the fetch stage
-	fetch FetchStage(.err(err_fetch), .PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .PCSrc(PCSrc), .Halt(Halt_tof), .Branch_PC(Branch_PC), .Cond(Cond), .PCImm(PCImm), .Jump(Jump), .En(En | ~Dmem_Stall), .nop(nop));
+	fetch FetchStage(.err(err_fetch), .PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .PCSrc(PCSrc), .Halt(Halt_tof), .Branch_PC(Branch_PC), .Cond(Cond), .PCImm(PCImm), .Jump(Jump), .En(En), .nop(nop), .Dmem_Stall(Dmem_Stall));
 
 	//Instantiate Fetch to Decode Pipeline 
-	ifid fetchToDec(.PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .en(En | ~Dmem_Stall), .PCIncOut(PCIncOut), .DecInstrOut(DecInstrOut), .nop(nop));
+	ifid fetchToDec(.PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .en(En&~Dmem_Stall), .PCIncOut(PCIncOut), .DecInstrOut(DecInstrOut), .nop(nop));
 
 	// Instantiate the decode stage
 	decode DecodeStage(.rst(rst), .clk(clk), .instruct(DecInstrOut), .wb(wb), .ReadData2(ReadData2), .EffReadData1(EffReadData1), .Imm(Imm), .err(err_decode), .DMemWrite(DMemWrite), .DMemEn(DMemEn), .Btr(Btr),
@@ -163,7 +163,7 @@ module proc (/*AUTOARG*/
 	memwb MemToWb(.Dmem_Stall(Dmem_Stall), .PCInc_towb(PCInc_towb), .MemOut_towb(MemOut_towb), .PCtoReg_towb(PCtoReg_towb),
 	       	.MemtoReg_towb(MemtoReg_towb), .Cond_towb(Cond_towb), .Set_towb(Set_towb), .ALUOut_towb(ALUOut_towb), .ALUOut(ALUOut_tomem),
 		.PCInc(PCInc_tomem), .MemOut(MemOut), .PCtoReg(PCtoReg_tomem), .MemtoReg(MemtoReg_tomem), .Halt(Halt_tomem),
-		.Cond(Cond_tomem), .Set(Set_tomem), .rst(rst), .clk(clk), .en(1'b1), .instructin(MemInstr), .RegDst(RegDst_tomem), .RegWrite(RegWrite_tomem),
+		.Cond(Cond_tomem), .Set(Set_tomem), .rst(rst), .clk(clk), .en(~Dmem_Stall), .instructin(MemInstr), .RegDst(RegDst_tomem), .RegWrite(RegWrite_tomem),
        		.instructout(WbInstr), .RegDst_todec(RegDst_todec), .RegWrite_todec(RegWrite_todec), .Halt_tof(Halt_tof));
 
 	

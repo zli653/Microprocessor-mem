@@ -3,7 +3,7 @@ module fetch (
 	//outputs
 	err, PCInc, Instr, nop,
 	//inputs
-	clk, rst, PCSrc, Halt, Branch_PC, Cond, PCImm, Jump, En
+	clk, rst, PCSrc, Halt, Branch_PC, Cond, PCImm, Jump, En, Dmem_Stall
 	);
 
 	//inputs
@@ -16,6 +16,7 @@ module fetch (
 	input Cond;	
 	input En;
 	input [15:0] Branch_PC;
+	input Dmem_Stall;
 	
 	//outputs
 	output [15:0] PCInc; 
@@ -40,7 +41,7 @@ module fetch (
 
 	assign mux1_ctrl = PCImm | Jump | (PCSrc & Cond);
 	assign mux1_out = mux1_ctrl ? Branch_PC : PCInc;
-	assign mux2_out = (~En | Halt | (Stall & ~mux1_ctrl)) ? PCIn : mux1_out;
+	assign mux2_out = (~En | Halt | ((Stall|Dmem_Stall) & ~mux1_ctrl)) ? PCIn : mux1_out;
 	assign PCCur = rst ? 16'h0000 : mux2_out;
 	
 	reg_16b pc_reg (.clk(clk),.rst(rst),.writeData(PCCur),.readData(PCIn));

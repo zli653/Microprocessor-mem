@@ -30,9 +30,9 @@ module memwb (
 	dff_wrapper b_4(.q(RegDst_todec[0]), .d(RegDst[0]), .en(en), .clk(clk), .rst(rst));
 	dff_wrapper b_5(.q(RegDst_todec[1]), .d(RegDst[1]), .en(en), .clk(clk), .rst(rst));
 
-	dff_wrapper b_6(.q(RegWrite_todec), .d(RegWrite), .en(en), .clk(clk), .rst(rst));
-	
+	dff_wrapper b_6(.q(RegWrite_todec_int), .d(RegWrite), .en(en), .clk(clk), .rst(rst));
+	assign RegWrite_todec = RegWrite_todec_int &~ Dmem_Stall; 	
 	dff_wrapper b_7(.q(Halt_tof), .d(Halt), .en(en), .clk(clk), .rst(rst));
-	
+
 	assign instructout = (rst | Dmem_Stall) ? 16'b0000100000000000 : instructInt;
 endmodule
