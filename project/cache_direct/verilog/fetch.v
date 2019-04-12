@@ -51,10 +51,13 @@ module fetch (
 	//dont care about datain, never writing to this mem
 	//started addr at zero on Rst
 	
-	stallmem imem(.DataOut(Instr_int), .Done(Done), .Stall(Stall), .CacheHit(CacheHit), .err(err), .Addr(PCIn), 
-		.DataIn(16'd0), .Rd(1'b1), .Wr(1'b0), .createdump(1'b1), .clk(clk), .rst(rst));
-	//memory2c_align imem(.data_out(Instr_int), .data_in(16'd0), .addr(PCIn), .enable(1'b1), .wr(1'b0), .createdump(1'b0), 
-	//	.clk(clk), .rst(rst), .err(err));
+	//stallmem imem(.DataOut(Instr_int), .Done(Done), .Stall(Stall), .CacheHit(CacheHit), .err(err), .Addr(PCIn), 
+	//		.DataIn(16'd0), .Rd(1'b1), .Wr(1'b0), .createdump(1'b1), .clk(clk), .rst(rst));
+	assign Stall = 1'b0;
+	assign Done = 1'b1;
+	assign CacheHit = 1'b1;
+	memory2c_align imem(.data_out(Instr_int), .data_in(16'd0), .addr(PCIn), .enable(1'b1), .wr(1'b0), .createdump(1'b0), 
+		.clk(clk), .rst(rst), .err(err));
 	assign Instr = Instr_int;
 	assign nop = (mux1_ctrl & ~rst) | Stall; 
 endmodule

@@ -7,7 +7,7 @@ module idex (
 	//Inputs
 	//
 
-	InvA, InvB, Sign, Cin, Op, Halt, PCInc,
+	InvA, InvB, Sign, Cin, Op, Halt, PCInc, en,
         ALUSrc2, Btr, ReadData2, EffReadData1,
         Imm, DMemWrite, DMemEn, DMemDump, PCtoReg,
         MemtoReg, Cond, Set, clk, En, rst, instructin, RegDst, RegWrite
@@ -27,16 +27,14 @@ module idex (
 	input InvA, InvB, Sign, Cin, ALUSrc2, Btr,
         DMemWrite, DMemEn, DMemDump, PCtoReg,
         MemtoReg, Cond, Set, clk, En, rst,
-	RegWrite, Halt;
+	RegWrite, Halt, en;
 
 	wire [15:0] instructInt;
 	wire RegWrite_toex_int;
 	wire DMemWrite_toex_int;
 	wire DMemEn_toex_int;
 	wire Halt_toex_int;
-	wire en;
 
-	assign en = 1'b1;
 	assign DMemEn_toex_int = DMemEn & En;
  	assign RegWrite_toex_int = En & RegWrite; 
  	assign DMemWrite_toex_int = En & DMemWrite; 

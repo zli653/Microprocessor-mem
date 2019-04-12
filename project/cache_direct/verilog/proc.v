@@ -102,10 +102,10 @@ module proc (/*AUTOARG*/
 	wire Lbi, nop;
 
 	// Instantiate the fetch stage
-	fetch FetchStage(.err(err_fetch), .PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .PCSrc(PCSrc), .Halt(Halt_tof), .Branch_PC(Branch_PC), .Cond(Cond), .PCImm(PCImm), .Jump(Jump), .En(En), .nop(nop));
+	fetch FetchStage(.err(err_fetch), .PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .PCSrc(PCSrc), .Halt(Halt_tof), .Branch_PC(Branch_PC), .Cond(Cond), .PCImm(PCImm), .Jump(Jump), .En(En | ~Dmem_Stall), .nop(nop));
 
 	//Instantiate Fetch to Decode Pipeline 
-	ifid fetchToDec(.PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .en(En), .PCIncOut(PCIncOut), .DecInstrOut(DecInstrOut), .nop(nop));
+	ifid fetchToDec(.PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .en(En | ~Dmem_Stall), .PCIncOut(PCIncOut), .DecInstrOut(DecInstrOut), .nop(nop));
 
 	// Instantiate the decode stage
 	decode DecodeStage(.rst(rst), .clk(clk), .instruct(DecInstrOut), .wb(wb), .ReadData2(ReadData2), .EffReadData1(EffReadData1), .Imm(Imm), .err(err_decode), .DMemWrite(DMemWrite), .DMemEn(DMemEn), .Btr(Btr),
@@ -137,7 +137,7 @@ module proc (/*AUTOARG*/
 		.InvA(InvA), .InvB(InvB), .Sign(Sign), .Cin(Cin), .Op(Op), .Halt(Halt), .PCInc(PCIncOut),
 		.ALUSrc2(ALUSrc2), .Btr(Btr), .ReadData2(ReadData2), .EffReadData1(EffReadData1),
 		.Imm(Imm), .DMemWrite(DMemWrite), .DMemEn(DMemEn), .DMemDump(DMemDump), .PCtoReg(PCtoReg),
-		.MemtoReg(MemtoReg), .Cond(Cond), .Set(Set), .clk(clk), .En(En), .rst(rst), .instructin(DecInstrOut), .RegWrite(DecRegWriteout), .RegDst(DecRegDstout)
+		.MemtoReg(MemtoReg), .Cond(Cond), .Set(Set), .clk(clk), .En(En), .en(~Dmem_Stall), .rst(rst), .instructin(DecInstrOut), .RegWrite(DecRegWriteout), .RegDst(DecRegDstout)
 		);
 
 
@@ -152,7 +152,7 @@ module proc (/*AUTOARG*/
 		.DMemDump_tomem(DMemDump_tomem), .PCtoReg_tomem(PCtoReg_tomem), .MemtoReg_tomem(MemtoReg_tomem), .Cond_tomem(Cond_tomem), .Set_tomem(Set_tomem), .instructout(MemInstr), .RegWrite_tomem(RegWrite_tomem), .RegDst_tomem(RegDst_tomem), .Halt_tomem(Halt_tomem),
 		//Inputs
 		.PCInc(PCInc_toex), .ALUOut(ALUOut), .ReadData2(ReadData2_toex), .DMemWrite(DMemWrite_toex), .DMemEn(DMemEn_toex), .Halt(Halt_toex),
-		.DMemDump(DMemDump_toex), .PCtoReg(PCtoReg_toex), .MemtoReg(MemtoReg_toex), .Cond(Cond_toex), .Set(Set_toex), .clk(clk), .en(1'b1), .rst(rst), .instructin(ExInstr), .RegWrite(RegWrite_toex), .RegDst(RegDst_toex)
+		.DMemDump(DMemDump_toex), .PCtoReg(PCtoReg_toex), .MemtoReg(MemtoReg_toex), .Cond(Cond_toex), .Set(Set_toex), .clk(clk), .en(~Dmem_Stall), .rst(rst), .instructin(ExInstr), .RegWrite(RegWrite_toex), .RegDst(RegDst_toex)
 		);
 
 	// Instantiate the memory stage
