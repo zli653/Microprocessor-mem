@@ -30,6 +30,7 @@ module fetch (
 	wire dc;
 	wire [15:0] Instr_int;
 	wire [15:0] PCIn;
+	wire Stall, Done, CacheHit;
 
 	//wire cond_out;
 	//wire pc_src_out;
@@ -40,7 +41,9 @@ module fetch (
 	assign mux1_ctrl = PCImm | Jump | (PCSrc & Cond);
 	assign mux1_out = mux1_ctrl ? Branch_PC : PCInc;
 	assign mux2_out = (~En | Halt) ? PCIn : mux1_out;
-	assign PCCur = rst ? 16'h0000 : mux2_out;	
+	assign PCCur = rst ? 16'h0000 : 
+		~nop ? mux2_out:
+		mux1_ctrl ? Branch_PC : PCIn;	
 	
 	reg_16b pc_reg (.clk(clk),.rst(rst),.writeData(PCCur),.readData(PCIn));
 	
@@ -49,8 +52,11 @@ module fetch (
 
 	//dont care about datain, never writing to this mem
 	//started addr at zero on Rst
-	memory2c_align imem(.data_out(Instr_int), .data_in(16'd0), .addr(PCIn), .enable(1'b1), .wr(1'b0), .createdump(1'b0), 
-		.clk(clk), .rst(rst), .err(err));
+	
+	stallmem imem(.DataOut(Instr_int), .Done(Done), .Stall(Stall), .CacheHit(CacheHit), .err(err), .Addr(PCIn), 
+		.DataIn(16'd0), .Rd(1'b1), .Wr(1'b0), .createdump(1'b1), .clk(clk), .rst(rst));
+	//memory2c_align imem(.data_out(Instr_int), .data_in(16'd0), .addr(PCIn), .enable(1'b1), .wr(1'b0), .createdump(1'b0), 
+	//	.clk(clk), .rst(rst), .err(err));
 	assign Instr = Instr_int;
-	assign nop = (mux1_ctrl & ~rst); 
+	assign nop = (mux1_ctrl & ~rst) | Stall; 
 endmodule
