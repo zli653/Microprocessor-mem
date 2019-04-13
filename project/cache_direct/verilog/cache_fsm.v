@@ -26,9 +26,10 @@ module cache_fsm(
 	// Outputs not in case statement
 	output fs_err;
 	
-	// Internal wires
+	// Internal regs and wires
 	reg [1:0] read_offset;
 	reg [3:0] state,next_state;
+	wire [3:0] state_int, next_state_int;
 	reg f_err;
 
 	//Intermediate
@@ -61,12 +62,11 @@ module cache_fsm(
 
 	reg_16b reg_0 (.clk(clk),.rst(rst),.writeData(data_int),.readData(data_prev));
 
+	assign state_int = state;
+	assign next_state_int = next_state;
+	
 	// Holds state for state machine
-	//dff state_ff [3:0] (.q(state), .d(next_state), .clk(clk), .rst(rst));
-	dff state_ff [3:0] (.q(state), .d(next_state), .clk(clk), .rst(rst));
-	dff state_ff [3:0] (.q(state), .d(next_state), .clk(clk), .rst(rst));
-	dff state_ff [3:0] (.q(state), .d(next_state), .clk(clk), .rst(rst));
-	dff state_ff [3:0] (.q(state), .d(next_state), .clk(clk), .rst(rst));
+	dff state_ff [3:0] (.q(state_int), .d(next_state_int), .clk(clk), .rst(rst));
 	
 	assign fs_err = c_err | m_err | f_err;
 
