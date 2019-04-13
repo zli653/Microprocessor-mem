@@ -2,7 +2,7 @@ module cache_fsm(
 		// Inputs
 		addr,data_in,read,write,clk,rst,
 		c_tag_out,c_data_out,c_hit,c_dirty,c_valid,c_err,
-		m_data_out,m_stall,m_busy,m_err,
+		m_data_out,m_busy,m_err,
 
 		// Outputs	
 		fc_enable,fc_tag_in,fc_index,fc_offset,fc_data_in,fc_comp,fc_write,fc_valid_in,
@@ -14,8 +14,8 @@ module cache_fsm(
 	input [15:0] addr,data_in,c_data_out,m_data_out;
 	input [4:0] c_tag_out;
 	input [3:0] m_busy;
-	input c_hit,c_dirty,c_valid,c_err,m_stall,m_err,read,write,clk,rst;
-	
+	input c_hit,c_dirty,c_valid,c_err,m_err,read,write,clk,rst;
+		
 	// Outputs	
 	output reg [15:0] fm_addr,fm_data_in,fs_data_out,fc_data_in;
 	output reg [7:0] fc_index;
@@ -61,10 +61,12 @@ module cache_fsm(
 			  data_prev;
 
 	reg_16b reg_0 (.clk(clk),.rst(rst),.writeData(data_int),.readData(data_prev));
-
-	assign state_int = state;
-	assign next_state_int = next_state;
 	
+	//assign state_int = state;
+	assign next_state_int = next_state;
+
+	//assign state_int = state;
+
 	// Holds state for state machine
 	dff state_ff [3:0] (.q(state_int), .d(next_state_int), .clk(clk), .rst(rst));
 	
@@ -89,7 +91,8 @@ module cache_fsm(
 		fs_data_out	= 16'd0;
 		f_err		= 1'b0;
 		read_offset 	= 2'bXX;
-
+		
+		state = state_int;	
 		next_state = 4'd0;
 		case(state)
 			4'b0000://IDLE
