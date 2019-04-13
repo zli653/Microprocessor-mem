@@ -31,7 +31,7 @@ module cache_fsm_wrapper(
 	output fs_err;
 	
 	// Internal regs and wires
-	reg [1:0] read_offset;
+	reg [2:0] read_offset;
 	reg [3:0] state,next_state;
 	input [3:0] state_int;
 	output [3:0] next_state_int;
@@ -62,7 +62,7 @@ module cache_fsm_wrapper(
 
         assign data_int = write ? data_in : 
 			  ~read ? 16'd0 :
-			  (addr[2:1] == read_offset) ? m_data_out :
+			  ({addr[2:1],1'b1} == read_offset) ? m_data_out :
 			  data_prev;
 
 	//assign state_int = state;
@@ -89,7 +89,7 @@ module cache_fsm_wrapper(
 		fs_cachehit	= 1'b0;
 		fs_data_out	= 16'd0;
 		f_err		= 1'b0;
-		read_offset 	= 2'bXX;
+		read_offset 	= 3'b000;
 		
 		state = state_int;	
 		next_state = state;
@@ -247,7 +247,7 @@ module cache_fsm_wrapper(
 					 	fc_tag_in = addr[15:11];
 						fc_index = addr[10:3];
 						fc_data_in = m_data_out; //writing word 0 in cache
-						read_offset = 2'd0;
+						read_offset = 3'b001;
 					end
 					
 					1'b1:
@@ -277,7 +277,7 @@ module cache_fsm_wrapper(
 					 	fc_tag_in = addr[15:11];
 						fc_index = addr[10:3];
 						fc_data_in = m_data_out; //writing word 1 in cache
-						read_offset = 2'd1;
+						read_offset = 3'b011;
 					end
 					
 					1'b1:
@@ -292,7 +292,7 @@ module cache_fsm_wrapper(
 					 	fc_tag_in = addr[15:11];
 						fc_index = addr[10:3];
 						fc_data_in = m_data_out; //TODO CHECK THIS: extra writes
-						read_offset = 2'd0;
+						read_offset = 3'b001;
 					end
 					
 					default :
@@ -311,7 +311,7 @@ module cache_fsm_wrapper(
 				fc_tag_in = addr[15:11];
 				fc_index = addr[10:3];
 				fc_data_in = m_data_out; //writing word 2 in cache
-				read_offset = 2'd2;
+				read_offset = 3'b101;
 
 			end
 			
@@ -323,7 +323,7 @@ module cache_fsm_wrapper(
 				fc_tag_in = addr[15:11];
 				fc_index = addr[10:3];
 				fc_data_in = m_data_out; //writing word 3 in cache
-				read_offset = 2'd3;
+				read_offset = 3'b111;
 				case(write)
 					1'b0:
 					begin
