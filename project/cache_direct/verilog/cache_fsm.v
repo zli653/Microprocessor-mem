@@ -44,8 +44,46 @@ module cache_fsm(
 	assign fs_err = c_err | m_err;
 
 	always@(*) begin
+		
+		// Set to default, only change necessary
+		fm_addr 	= 16'd0;
+		fm_data_in	= 16'd0;
+		fs_data_out	= 16'd0;
+		fc_data_in	= 16'd0;
+		fc_index	= 8'd0;
+		fc_tag_in	= 5'd0;
+		fc_offset	= 3'd0;
+		fc_enable	= 1'b0;
+		fc_comp		= 1'b0;
+		fc_write	= 1'b0;
+		fc_valid_in	= 1'b1; // Should always be valid execpt on reset
+		fm_wr		= 1'b0;
+		fm_rd		= 1'b0;
+		fs_done		= 1'b0;
+		fs_stall	= 1'b0;
+		fs_cachehit	= 1'b0;
+		
 		case(state)
-
+			4'b0000://IDLE
+			begin
+				case({write, read}):
+					2'b10:
+					begin
+					end
+					2'b01:
+					begin
+					end
+					2'b00:
+					begin
+					end	
+				endcase	
+			end
+			
+			default://DEFAULT to IDLE (Never reached)
+			begin
+				//TODO
+			end
+		endcase
 	end	
 endmodule
 
