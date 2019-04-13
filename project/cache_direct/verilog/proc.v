@@ -156,7 +156,7 @@ module proc (/*AUTOARG*/
 		);
 
 	// Instantiate the memory stage
-	memory MemoryStage(.MemOut(MemOut), .ReadData2(ReadData2_tomem), .ALUOut(ALUOut_tomem), .C_DMemEn(DMemEn_tomem), .C_DMemWrite(DMemWrite_tomem), .C_DMemDump(DMemDump_tomem), .clk(clk), .rst(rst), .err(err_mem), .Dmem_Stall(Dmem_Stall));
+	memory MemoryStage(.MemOut(MemOut), .ReadData2(ReadData2_tomem), .ALUOut(ALUOut_tomem), .C_DMemEn(DMemEn_tomem & ~Halt_tof), .C_DMemWrite(DMemWrite_tomem), .C_DMemDump(DMemDump_tomem), .clk(clk), .rst(rst), .err(err_mem), .Dmem_Stall(Dmem_Stall));
 
 	//Instantiate mem to writeback
 
