@@ -27,8 +27,12 @@ module cache_fsm(
 	output fs_err;
 	
 	// Internal wires
+	reg [1:0] read_offset;
 	reg [3:0] state,next_state;
 	reg f_err;
+
+	//Intermediate
+	wire [15:0] data_int, data_prev;
 
 	/*
 	* _______STATE_KEY______
@@ -50,6 +54,12 @@ module cache_fsm(
 	* 	
 	*/
 
+        assign data_int = write ? data_in : 
+			  ~read ? 16'd0 :
+			  (addr[2:1] == read_offset) ? m_data_out :
+			  data_prev;
+
+	reg_16b reg_0 (.clk(clk),.rst(rst),.writeData(data_int),.readData(data_prev));
 
 	// Holds state for state machine
 	dff state_ff [3:0] (.q(next_state), .d(state), .clk(clk), .rst(rst));
@@ -156,7 +166,6 @@ module cache_fsm(
 			end	
 
 			4'b1000://MEM_ACC_1
-
 			begin
 				case(m_busy[0]) begin
 					1'b0:
@@ -184,7 +193,6 @@ module cache_fsm(
 			end
 
 			4'b1001://MEM_ACC_2
-
 			begin
 				case(m_busy[1]) begin
 					1'b0:
@@ -210,9 +218,7 @@ module cache_fsm(
 				endcase
 			end
 
-
 			4'b1010://MEM_ACC_3
-
 			begin
 				case(m_busy[2]) begin
 					1'b0:
@@ -227,6 +233,7 @@ module cache_fsm(
 					 	fc_tag_in = addr[15:11];
 						fc_index = addr[10:3];
 						fc_data_in = m_data_out; //writing word 0 in cache
+						read_offset = 2'd0;
 					end
 					
 					1'b1:
@@ -244,10 +251,7 @@ module cache_fsm(
 				endcase
 			end
 
-
-
 			4'b1011://MEM_ACC_4
-
 			begin
 				case(m_busy[3]) begin
 					1'b0:
@@ -259,6 +263,7 @@ module cache_fsm(
 					 	fc_tag_in = addr[15:11];
 						fc_index = addr[10:3];
 						fc_data_in = m_data_out; //writing word 1 in cache
+						read_offset = 2'd1;
 					end
 					
 					1'b1:
@@ -273,6 +278,7 @@ module cache_fsm(
 					 	fc_tag_in = addr[15:11];
 						fc_index = addr[10:3];
 						fc_data_in = m_data_out; //TODO CHECK THIS: extra writes
+						read_offset = 2'd0;
 					end
 					
 					default :
@@ -282,37 +288,34 @@ module cache_fsm(
 				endcase
 			end
 
-
-
-			4'b1011://MEM_ACC_4
-
+			4'b1100://MEM_ACC_5
 			begin
-				case(m_busy[3]) begin
-					1'b0:
-				        begin
-						next_state = 4'b1100;//MEM_ACC_5
-						fc_enable = 1'b1;
-						fc_write = 1'b1;
-						fc_offset = 3'b010;
-					 	fc_tag_in = addr[15:11];
-						fc_index = addr[10:3];
-						fc_data_in = m_data_out; //writing word 1 in cache
-					end
-					
-					1'b1:
-					begin
-						next_state = 4'b1010;//MEM_ACC_3
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b100};//bank 2
-					end
+				next_state = 4'b1101;//MEM_ACC_6
+				fc_enable = 1'b1;
+				fc_write = 1'b1;
+				fc_offset = 3'b100;
+				fc_tag_in = addr[15:11];
+				fc_index = addr[10:3];
+				fc_data_in = m_data_out; //writing word 2 in cache
+				read_offset = 2'd2;
 
-					default :
-					begin
-						f_err = 1'b1;
-					end
-				endcase
 			end
+			
+			4'b1101://MEM_ACC_6
+			begin
+				//Defaulting back to IDLE
+				fc_enable = 1'b1;
+				fc_write = 1'b1;
+				fc_offset = 3'b110;
+				fc_tag_in = addr[15:11];
+				fc_index = addr[10:3];
+				fc_data_in = m_data_out; //writing word 3 in cache
+				fs_done = 1'b1;
+				fs_data_out = data_int;
+				read_offset = 2'd3;
+			end
+
+
 			4'b0010://COMP_READ
 			begin
 			end	
