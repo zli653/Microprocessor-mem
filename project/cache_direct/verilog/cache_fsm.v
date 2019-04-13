@@ -2,26 +2,26 @@ module cache_fsm(
 		// Inputs
 		addr,data_in,read,write,clk,rst,
 		c_tag_out,c_data_out,c_hit,c_dirty,c_valid,c_err,
-		m_data_out,m_busy,m_err,
+		m_data_out,m_busy,m_err,m_stall,
 
 		// Outputs	
 		fc_enable,fc_tag_in,fc_index,fc_offset,fc_data_in,fc_comp,fc_write,fc_valid_in,
 		fm_addr,fm_data_in,fm_wr,fm_rd,
-		fs_data_out,fs_done,fs_cachehit,fs_err
+		fs_data_out,fs_done,fs_cachehit,fs_err,f_stall
 	);
 	
 	// Inputs
 	input [15:0] addr,data_in,c_data_out,m_data_out;
 	input [4:0] c_tag_out;
 	input [3:0] m_busy;
-	input c_hit,c_dirty,c_valid,c_err,m_err,read,write,clk,rst;
+	input c_hit,c_dirty,c_valid,c_err,m_err,read,write,clk,rst,m_stall;
 		
 	// Outputs	
 	output [15:0] fm_addr,fm_data_in,fs_data_out,fc_data_in;
 	output [7:0] fc_index;
 	output [4:0] fc_tag_in;
 	output [2:0] fc_offset;
-	output fc_enable,fc_comp,fc_write,fc_valid_in,fm_wr,fm_rd,fs_done,fs_cachehit;
+	output fc_enable,fc_comp,fc_write,fc_valid_in,fm_wr,fm_rd,fs_done,fs_cachehit,f_stall;
 
 	// Outputs not in case statement
 	output fs_err;
@@ -78,7 +78,7 @@ module cache_fsm(
 	dff c_dirty_f (.q(curr_c_dirty), .d(c_dirty), .clk(clk), .rst(rst));
 	dff c_valid_f (.q(curr_c_valid), .d(c_valid), .clk(clk), .rst(rst));
 
-		
+	assign f_stall = m_stall | ~fs_done;
 	
 	cache_fsm_wrapper fsm (
                 // Inputs

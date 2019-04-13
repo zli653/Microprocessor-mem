@@ -51,6 +51,7 @@ module mem_system(/*AUTOARG*/
 	wire [15:0] fm_data_in;
 	wire fm_wr;
 	wire fm_rd;
+	wire m_stall;
 
 	/* data_mem = 1, inst_mem = 0 *
 	* needed for cache parameter */
@@ -77,7 +78,7 @@ module mem_system(/*AUTOARG*/
 
 	four_bank_mem mem(// Outputs
 		.data_out          (m_data_out),
-		.stall             (Stall),
+		.stall             (m_stall),
 		.busy              (m_busy),
 		.err               (m_err),
 		// Inputs
@@ -94,12 +95,12 @@ module mem_system(/*AUTOARG*/
 		// Inputs
 		.addr(Addr),.data_in(DataIn),.read(Rd),.write(Wr),.clk(clk),.rst(rst),
 		.c_tag_out(c_tag_out),.c_data_out(c_data_out),.c_hit(c_hit),.c_dirty(c_dirty),.c_valid(c_valid),.c_err(c_err),
-		.m_data_out(m_data_out),.m_busy(m_busy),.m_err(m_err),
+		.m_data_out(m_data_out),.m_busy(m_busy),.m_err(m_err),.m_stall(m_stall),
 
 		// Outputs	
    		.fc_enable(fc_enable),.fc_tag_in(fc_tag_in),.fc_index(fc_index),.fc_offset(fc_offset),.fc_data_in(fc_data_in),.fc_comp(fc_comp),.fc_write(fc_write),.fc_valid_in(fc_valid_in),
 		.fm_addr(fm_addr),.fm_data_in(fm_data_in),.fm_wr(fm_wr),.fm_rd(fm_rd),
-		.fs_data_out(DataOut),.fs_done(Done),.fs_cachehit(CacheHit),.fs_err(err)
+		.fs_data_out(DataOut),.fs_done(Done),.fs_cachehit(CacheHit),.fs_err(err),.f_stall(Stall)
 	);
 
 endmodule // mem_system
