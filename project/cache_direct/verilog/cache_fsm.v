@@ -7,7 +7,7 @@ module cache_fsm(
 		// Outputs	
 		fc_enable,fc_tag_in,fc_index,fc_offset,fc_data_in,fc_comp,fc_write,fc_valid_in,
 		fm_addr,fm_data_in,fm_wr,fm_rd,
-		fs_data_out,fs_done,fs_stall,fs_cachehit,fs_err
+		fs_data_out,fs_done,fs_cachehit,fs_err
 	);
 	
 	// Inputs
@@ -21,7 +21,7 @@ module cache_fsm(
 	output reg [7:0] fc_index;
 	output reg [4:0] fc_tag_in;
 	output reg [2:0] fc_offset;
-	output reg fc_enable,fc_comp,fc_write,fc_valid_in,fm_wr,fm_rd,fs_done,fs_stall,fs_cachehit;
+	output reg fc_enable,fc_comp,fc_write,fc_valid_in,fm_wr,fm_rd,fs_done,fs_cachehit;
 
 	// Outputs not in case statement
 	output fs_err;
@@ -71,7 +71,6 @@ module cache_fsm(
 		fm_wr		= 1'b0;
 		fm_rd		= 1'b0;
 		fs_done		= 1'b0;
-		fs_stall	= 1'b0;
 		fs_cachehit	= 1'b0;
 		fs_data_out	= 16'd0;
 		f_err		= 1'b0;
@@ -153,15 +152,171 @@ module cache_fsm(
 					begin
 						f_err = 1'b1;
 					end
+				endcase
 			end	
-			default://DEFAULT to IDLE (Never reached)
+
+			4'b1000://MEM_ACC_1
+
 			begin
-				f_err = 1'b1;
+				case(m_busy[0]) begin
+					1'b0:
+				        begin
+						next_state = 4'b1001;//MEM_ACC_2
+						fm_wr = 1'b0;
+						fm_rd = 1'b1;
+						fm_addr = {addr[15:3], 3'b010};//bank 1
+					end
+					
+					1'b1:
+					begin
+						next_state = 4'b1000;//MEM_ACC_1
+						fm_wr = 1'b0;
+						fm_rd = 1'b1;
+						fm_addr = {addr[15:3], 3'b000};//bank 0
+					
+					end
+
+					default :
+					begin
+						f_err = 1'b1;
+					end
+				endcase
 			end
-			
+
+			4'b1001://MEM_ACC_2
+
+			begin
+				case(m_busy[1]) begin
+					1'b0:
+				        begin
+						next_state = 4'b1010;//MEM_ACC_3
+						fm_wr = 1'b0;
+						fm_rd = 1'b1;
+						fm_addr = {addr[15:3], 3'b100};//bank 2
+					end
+					
+					1'b1:
+					begin
+						next_state = 4'b1001;//MEM_ACC_2
+						fm_wr = 1'b0;
+						fm_rd = 1'b1;
+						fm_addr = {addr[15:3], 3'b010};//bank 1
+					end
+
+					default :
+					begin
+						f_err = 1'b1;
+					end
+				endcase
+			end
+
+
+			4'b1010://MEM_ACC_3
+
+			begin
+				case(m_busy[2]) begin
+					1'b0:
+				        begin
+						next_state = 4'b1011;//MEM_ACC_4
+						fm_wr = 1'b0;
+						fm_rd = 1'b1;
+						fm_addr = {addr[15:3], 3'b110};//bank 3
+						fc_enable = 1'b1;
+						fc_write = 1'b1;
+						fc_offset = 3'b000;
+					 	fc_tag_in = addr[15:11];
+						fc_index = addr[10:3];
+						fc_data_in = m_data_out; //writing word 0 in cache
+					end
+					
+					1'b1:
+					begin
+						next_state = 4'b1010;//MEM_ACC_3
+						fm_wr = 1'b0;
+						fm_rd = 1'b1;
+						fm_addr = {addr[15:3], 3'b100};//bank 2
+					end
+
+					default :
+					begin
+						f_err = 1'b1;
+					end
+				endcase
+			end
+
+
+
+			4'b1011://MEM_ACC_4
+
+			begin
+				case(m_busy[3]) begin
+					1'b0:
+				        begin
+						next_state = 4'b1100;//MEM_ACC_5
+						fc_enable = 1'b1;
+						fc_write = 1'b1;
+						fc_offset = 3'b010;
+					 	fc_tag_in = addr[15:11];
+						fc_index = addr[10:3];
+						fc_data_in = m_data_out; //writing word 1 in cache
+					end
+					
+					1'b1:
+					begin
+						next_state = 4'b1011;//MEM_ACC_4
+						fm_wr = 1'b0;
+						fm_rd = 1'b1;
+						fm_addr = {addr[15:3], 3'b110};//bank 3
+						fc_enable = 1'b1;
+						fc_write = 1'b1;
+						fc_offset = 3'b000;
+					 	fc_tag_in = addr[15:11];
+						fc_index = addr[10:3];
+						fc_data_in = m_data_out; //TODO CHECK THIS: extra writes
+					end
+					
+					default :
+					begin
+						f_err = 1'b1;
+					end
+				endcase
+			end
+
+
+
+			4'b1011://MEM_ACC_4
+
+			begin
+				case(m_busy[3]) begin
+					1'b0:
+				        begin
+						next_state = 4'b1100;//MEM_ACC_5
+						fc_enable = 1'b1;
+						fc_write = 1'b1;
+						fc_offset = 3'b010;
+					 	fc_tag_in = addr[15:11];
+						fc_index = addr[10:3];
+						fc_data_in = m_data_out; //writing word 1 in cache
+					end
+					
+					1'b1:
+					begin
+						next_state = 4'b1010;//MEM_ACC_3
+						fm_wr = 1'b0;
+						fm_rd = 1'b1;
+						fm_addr = {addr[15:3], 3'b100};//bank 2
+					end
+
+					default :
+					begin
+						f_err = 1'b1;
+					end
+				endcase
+			end
 			4'b0010://COMP_READ
 			begin
 			end	
+			
 			default://DEFAULT to IDLE (Never reached)
 			begin
 				f_err = 1'b1;
