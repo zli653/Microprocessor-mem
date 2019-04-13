@@ -37,6 +37,22 @@ module mem_system(/*AUTOARG*/
 	wire [3:0] m_busy;
 	wire m_err;
 
+	// Cache inputs
+	wire fc_enable;
+	wire [4:0] fc_tag_in;
+	wire [7:0] fc_index;
+	wire [2:0] fc_offset;
+	wire [15:0] fc_data_in;
+	wire fc_comp;
+	wire fc_write;
+	wire fc_valid_in;
+
+	// Mem inputs
+	wire [15:0] fm_addr;
+	wire [15:0] fm_data_in;
+	wire fm_wr;
+	wire fm_rd;
+
 	/* data_mem = 1, inst_mem = 0 *
 	* needed for cache parameter */
 	parameter memtype = 0;
