@@ -60,7 +60,6 @@ module cache_fsm(
 		// Set to default, only change necessary
 		fm_addr 	= 16'd0;
 		fm_data_in	= 16'd0;
-		fs_data_out	= 16'd0;
 		fc_data_in	= 16'd0;
 		fc_index	= 8'd0;
 		fc_tag_in	= 5'd0;
@@ -74,6 +73,7 @@ module cache_fsm(
 		fs_done		= 1'b0;
 		fs_stall	= 1'b0;
 		fs_cachehit	= 1'b0;
+		fs_data_out	= 16'd0;
 		f_err		= 1'b0;
 
 		next_state = 4'd0;
@@ -91,6 +91,7 @@ module cache_fsm(
 						fc_offset = addr[2:0];
 						fc_index = addr[10:3];
 						fc_tag_in = addr[15:11];
+						fc_data_in = data_in;
 					end
 					2'b01:
 					begin
@@ -121,8 +122,37 @@ module cache_fsm(
 
 			4'b0001://COMP_WRITE
 			begin
-				case({c_hit, c_valid, c_dirty}):
-					3'b1:
+				casex({c_hit, c_valid, c_dirty}):
+					3'b11x: // Cache hit, return to idle
+					begin
+						fs_done = 1'b1;
+						fs_cachehit = 1'b1;
+						fs_data_out = c_data_out;
+					end	
+					3'bX0X: //Valid is 0
+					begin
+						next_state = 4'b1000;//MEM_ACC_1
+						fm_wr = 1'b0;
+						fm_rd = 1'b1;
+						fm_addr = {addr[15:3], 3'b000};//bank 0
+					end
+					3'b010:
+					begin
+						next_state = 4'b1000;//MEM_ACC_1
+						fm_wr = 1'b0;
+						fm_rd = 1'b1;
+						fm_addr = {addr[15:3], 3'b000};//bank 0
+					end
+					3'b011:
+					begin
+						next_state = 4'b0011;//EVICT_1
+						fc_enable = 1'b1;
+					end
+
+					default:
+					begin
+						f_err = 1'b1;
+					end
 			end	
 			default://DEFAULT to IDLE (Never reached)
 			begin
