@@ -104,6 +104,7 @@ module mem_system_perfbench(/*AUTOARG*/);
       // simulation delay
       
       if (Done) begin
+	 $display("LOG: In the successful one %d", n_replies);
          n_replies = n_replies + 1;
          if (CacheHit) begin
             n_cache_hits = n_cache_hits + 1;
