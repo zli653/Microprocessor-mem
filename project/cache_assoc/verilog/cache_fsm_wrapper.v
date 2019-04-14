@@ -96,211 +96,86 @@ module cache_fsm_wrapper(
 		case(state)
 			4'b0000://IDLE
 			begin
-				case({write, read})
-					2'b10:
-					begin
-						// go to comp write
-						next_state = 4'b0001;
-						fc_comp = 1'b1;
-						fc_write = 1'b1;
-						fc_enable = 1'b1;
-						fc_offset = addr[2:0];
-						fc_index = addr[10:3];
-						fc_tag_in = addr[15:11];
-						fc_data_in = data_in;
-					end
-					2'b01:
-					begin
-						// go to comp read
-						next_state = 4'b0010;
-						fc_comp = 1'b1;
-						fc_write = 1'b0;
-						fc_enable = 1'b1;
-						fc_offset = addr[2:0];
-						fc_index = addr[10:3];
-						fc_tag_in = addr[15:11];
+				next_state = ({write, read} == 2'b10) ? 4'b0001
+					: ({write, read} == 2'b01) ? 4'b0010 
+					: 4'b0000;
 
-					end
-					2'b00:
-					begin
-						// stay in IDLE
-						//fs_done = 1'b1;
-					end
-					2'b11: // read and write at the same time, print error message      
-					begin
-						f_err = 1'b1;
-					end
-					default: // never reached, print error message
-					begin
-						f_err = 1'b1;
-					end	
-				endcase	
+				fc_comp = ({write, read} == 2'b00) ? 1'b0 : 1'b1;
+				fc_write = ({write, read} == 2'b10) ? 1'b1 : 1'b0;
+				fc_enable = 1'b1;
+				fc_offset = addr[2:0];
+				fc_index = addr[10:3];
+				fc_tag_in = addr[15:11];
+				fc_data_in = ({write, read} == 2'b10) ? data_in : 16'd0;
 			end
 
 			4'b0001://COMP_WRITE
 			begin
-				casex({c_hit, c_valid, c_dirty})
-					3'b11x: // Cache hit, return to idle
-					begin
-						next_state = 4'b0000;
-						fs_done = 1'b1;
-						fs_cachehit = 1'b1;
-						fs_data_out = data_in;
-					end	
-					3'bX0X: //Valid is 0
-					begin
-						next_state = 4'b1000;//MEM_ACC_1
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b000};//bank 0
-					end
-					3'b010:
-					begin
-						next_state = 4'b1000;//MEM_ACC_1
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b000};//bank 0
-					end
-					3'b011:
-					begin
-						next_state = 4'b0011;//EVICT_1
-						
-						// Read from cache word 0
-						fc_enable = 1'b1;
-						fc_write = 1'b0;
-						fc_offset = 3'b000;
-					 	fc_tag_in = c_tag_out;
-						fc_index = addr[10:3];
-					end
-
-					default:
-					begin
-						f_err = 1'b1;
-					end
-				endcase
+				next_state = ({c_hit, c_valid, c_dirty} == 3'b010) ? 4'b1000
+					: ({c_hit, c_valid, c_dirty} == 3'b011) ? 4'b0011
+					: ({c_hit, c_valid} == 2'b11) ? 4'b0000
+					: (c_valid == 1'b0) ? 4'b1000 
+					: state;	
+				fs_done = ({c_hit, c_valid} == 2'b11) ? 1'b1 : 1'b0;
+				fs_cachehit = ({c_hit, c_valid} == 2'b11) ? 1'b1 : 1'b0;
+				fs_data_out = ({c_hit, c_valid} == 2'b11) ? data_in : 16'd0;
+				fm_rd = ((c_valid == 1'b0) | ({c_hit, c_valid, c_dirty} == 3'b010)) ? 1'b1 : 1'b0;
+				fm_addr = ((c_valid == 1'b0) | ({c_hit, c_valid, c_dirty} == 3'b010)) ? {addr[15:3], 3'b000}  : 16'd0;
+				
+				// Read from cache word 0
+				fc_enable = ({c_hit, c_valid, c_dirty} == 3'b011) ? 1'b1 : 1'b0;
+				fc_tag_in = ({c_hit, c_valid, c_dirty} == 3'b011) ? c_tag_out : 3'd0;
+				fc_index = ({c_hit, c_valid, c_dirty} == 3'b011) ? addr[10:3] : 8'd0;
 			end	
 
 			4'b1000: // MEM_ACC_1
 			begin
-				case(m_busy[0])
-					1'b0:
-				        begin
-						next_state = 4'b1001; // MEM_ACC_2
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b010};//bank 1
-					end
-					
-					1'b1:
-					begin
-						next_state = 4'b1000;//MEM_ACC_1
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b000};//bank 0
-					
-					end
-
-					default :
-					begin
-						f_err = 1'b1;
-					end
-				endcase
+				fm_wr = 1'b0;
+				fm_rd = 1'b1;
+				
+				next_state = (m_busy[0]) ? 4'b1000 : 4'b1001;
+				fm_addr = (m_busy[0]) ? {addr[15:3], 3'b000} : {addr[15:3], 3'b010};
 			end
 
 			4'b1001://MEM_ACC_2
 			begin
-				case(m_busy[1])
-					1'b0:
-				        begin
-						next_state = 4'b1010;//MEM_ACC_3
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b100};//bank 2
-					end
-					
-					1'b1:
-					begin
-						next_state = 4'b1001;//MEM_ACC_2
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b010};//bank 1
-					end
-
-					default :
-					begin
-						f_err = 1'b1;
-					end
-				endcase
+				fm_wr = 1'b0;
+				fm_rd = 1'b1;
+				
+				next_state = (m_busy[1]) ? 4'b1001 : 4'b1010;
+				fm_addr = (m_busy[1]) ? {addr[15:3], 3'b010} : {addr[15:3], 3'b100};
 			end
 
 			4'b1010://MEM_ACC_3
 			begin
-				case(m_busy[2])
-					1'b0:
-				        begin
-						next_state = 4'b1011;//MEM_ACC_4
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b110};//bank 3
-						fc_enable = 1'b1;
-						fc_write = 1'b1;
-						fc_offset = 3'b000;
-					 	fc_tag_in = addr[15:11];
-						fc_index = addr[10:3];
-						fc_data_in = m_data_out; //writing word 0 in cache
-						read_offset = 3'b001;
-					end
-					
-					1'b1:
-					begin
-						next_state = 4'b1010;//MEM_ACC_3
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b100};//bank 2
-					end
-
-					default :
-					begin
-						f_err = 1'b1;
-					end
-				endcase
+				fm_wr = 1'b0;
+				fm_rd = 1'b1;
+				
+				next_state = (m_busy[2]) ? 4'b1010 : 4'b1011;
+				fm_addr = (m_busy[2]) ? {addr[15:3], 3'b100} : {addr[15:3], 3'b110};
+				
+				fc_enable = (m_busy[2]) ? 1'b0 : 1'b1;
+				fc_write = (m_busy[2]) ? 1'b0 : 1'b1;
+				fc_tag_in = (m_busy[2]) ? 5'd0 : addr[15:11];
+				fc_index = (m_busy[2]) ? 8'd0 : addr[10:3];
+				fc_data_in = (m_busy[2]) ? 16'd0 : m_data_out;//writing word 0 in cache
+				read_offset = (m_busy[2]) ? 3'b000 : 3'b001;
 			end
 
 			4'b1011://MEM_ACC_4
 			begin
-				case(m_busy[3])
-					1'b0:
-				        begin
-						next_state = 4'b1100;//MEM_ACC_5
-						fc_enable = 1'b1;
-						fc_write = 1'b1;
-						fc_offset = 3'b010;
-					 	fc_tag_in = addr[15:11];
-						fc_index = addr[10:3];
-						fc_data_in = m_data_out; //writing word 1 in cache
-						read_offset = 3'b011;
-					end
-					
-					1'b1:
-					begin
-						next_state = 4'b1011;//MEM_ACC_4
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b110};//bank 3
-						fc_enable = 1'b1;
-						fc_write = 1'b1;
-						fc_offset = 3'b000;
-					 	fc_tag_in = addr[15:11];
-						fc_index = addr[10:3];
-						fc_data_in = m_data_out; //TODO CHECK THIS: extra writes
-						read_offset = 3'b001;
-					end
-					
-					default :
-					begin
-						f_err = 1'b1;
-					end
-				endcase
+				fm_rd = (m_busy[3]) ? 1'b1 : 1'b0;
+				
+				next_state = (m_busy[3]) ? 4'b1011 : 4'b1100;
+				fm_addr = (m_busy[3]) ? {addr[15:3], 3'b110} : 16'd0;
+				
+				fc_enable = 1'b1;
+				fc_write = 1'b1;
+				fc_tag_in = addr[15:11];
+				fc_index = addr[10:3];
+				fc_offset = (m_busy[3]) ? 3'b000 : 3'b010;
+				fc_data_in = m_data_out;//writing word in cache
+				read_offset = (m_busy[3]) ? 3'b001 : 3'b011;
 			end
 
 			4'b1100://MEM_ACC_5
@@ -325,64 +200,30 @@ module cache_fsm_wrapper(
 				fc_index = addr[10:3];
 				fc_data_in = m_data_out; //writing word 3 in cache
 				read_offset = 3'b111;
-				case(write)
-					1'b0:
-					begin
-						//Defaulting back to IDLE
-						next_state = 4'b0000;
-						fs_done = 1'b1;
-						fs_data_out = data_int;
-					end
-					1'b1: // go back to ACC_WRITE
-					begin
-						next_state = 4'b1110;
-					end	
-				endcase	
+				
+				fs_done = (write) ? 1'b0 : 1'b1;
+				next_state = (write) ? 4'b1110 : 4'b0000;
+				fs_data_out = (write) ? 16'd0 : data_int;
 			end
 
 
 			4'b0010://COMP_READ
 			begin
-				casex({c_hit, c_valid, c_dirty})
-					3'b11x: // Cache hit, return to idle
-					begin
-						next_state = 4'b0000;
-						fs_done = 1'b1;
-						fs_cachehit = 1'b1;
-						fs_data_out = c_data_out;
-					end	
-						
-					3'b010: // Miss, not-dirty
-					begin
-						next_state = 4'b1000;//MEM_ACC_1
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b000};//bank 0
-					end
-
-					3'bX0X: //Valid is 0
-					begin
-						next_state = 4'b1000;//MEM_ACC_1
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b000};//bank 0
-					end
-					
-					3'b011: // Miss, dirty
-					begin
-						next_state = 4'b0011;//EVICT_1
-						fc_enable = 1'b1;
-						fc_index = addr[10:3];
-						fc_tag_in = c_tag_out;
-						fc_offset = 3'b000; // Read word 0		
-					end
-
-					default:
-					begin
-						f_err = 1'b1;
-					end
-				endcase
-
+				next_state = ({c_hit, c_valid, c_dirty} == 3'b010) ? 4'b1000
+					: ({c_hit, c_valid, c_dirty} == 3'b011) ? 4'b0011
+					: ({c_hit, c_valid} == 2'b11) ? 4'b0000
+					: (c_valid == 1'b0) ? 4'b1000 
+					: state;	
+				fs_done = ({c_hit, c_valid} == 2'b11) ? 1'b1 : 1'b0;
+				fs_cachehit = ({c_hit, c_valid} == 2'b11) ? 1'b1 : 1'b0;
+				fs_data_out = ({c_hit, c_valid} == 2'b11) ? c_data_out : 16'd0;
+				fm_rd = ((c_valid == 1'b0) | ({c_hit, c_valid, c_dirty} == 3'b010)) ? 1'b1 : 1'b0;
+				fm_addr = ((c_valid == 1'b0) | ({c_hit, c_valid, c_dirty} == 3'b010)) ? {addr[15:3], 3'b000}  : 16'd0;
+				
+				// Read from cache word 0
+				fc_enable = ({c_hit, c_valid, c_dirty} == 3'b011) ? 1'b1 : 1'b0;
+				fc_tag_in = ({c_hit, c_valid, c_dirty} == 3'b011) ? c_tag_out : 3'd0;
+				fc_index = ({c_hit, c_valid, c_dirty} == 3'b011) ? addr[10:3] : 8'd0;
 			end
 
 			4'b0011: // EVICT_1
@@ -403,149 +244,54 @@ module cache_fsm_wrapper(
 
 			4'b0100: // EVICT_2
 			begin
-				case(m_busy[0])
-					1'b0:
-				        begin
-						next_state = 4'b0101; // EVICT_3
-						fc_enable = 1'b1;
-						fc_index = addr[10:3];
-						fc_tag_in = c_tag_out;
-						fc_offset = 3'b100; // Read word 2
-						
-						// Write to mem
-						fm_wr = 1'b1;
-						fm_rd = 1'b0;
-						fm_addr = {c_tag_out, addr[10:3], 3'b010}; // bank 1
-						fm_data_in = c_data_out;
-					end
-					
-					1'b1:
-					begin
-						next_state = 4'b0100; // EVICT_2
-						fc_enable = 1'b1;
-						fc_index = addr[10:3];
-						fc_tag_in = c_tag_out;
-						fc_offset = 3'b010; // Read word 1
-						
-						// Write to mem
-						fm_wr = 1'b1;
-						fm_rd = 1'b0;
-						fm_addr = {c_tag_out, addr[10:3], 3'b000}; // bank 0
-						fm_data_in = c_data_out;
-					end
-
-					default :
-					begin
-						f_err = 1'b1;
-					end
-				endcase
+				next_state = m_busy[0] ? 4'b0100 : 4'b0101;
+				fc_enable = 1'b1;
+				fc_index = addr[10:3];
+				fc_tag_in = c_tag_out;
+				fc_offset = m_busy[0] ? 3'b010 : 3'b100;
 				
+				fm_wr = 1'b1;
+				fm_rd = 1'b0;
+				fm_addr = m_busy[0] ?  {c_tag_out, addr[10:3], 3'b000} :  // bank 0
+					{c_tag_out, addr[10:3], 3'b010}; // bank 1
+				fm_data_in = c_data_out;
 			end	
 			
 			4'b0101: // EVICT_3
 			begin
-				case(m_busy[1])
-					1'b0:
-				        begin
-						next_state = 4'b0110; // EVICT_4
-						fc_enable = 1'b1;
-						fc_index = addr[10:3];
-						fc_tag_in = c_tag_out;
-						fc_offset = 3'b110; // Read word 3
-						
-						// Write to mem
-						fm_wr = 1'b1;
-						fm_rd = 1'b0;
-						fm_addr = {c_tag_out, addr[10:3], 3'b100}; // bank 2
-						fm_data_in = c_data_out;
-					end
-					
-					1'b1:
-					begin
-						next_state = 4'b0101; // EVICT_3
-						fc_enable = 1'b1;
-						fc_index = addr[10:3];
-						fc_tag_in = c_tag_out;
-						fc_offset = 3'b100; // Read word 2
-						
-						// Write to mem
-						fm_wr = 1'b1;
-						fm_rd = 1'b0;
-						fm_addr = {c_tag_out, addr[10:3], 3'b010}; // bank 1
-						fm_data_in = c_data_out;
-					end
-
-					default :
-					begin
-						f_err = 1'b1;
-					end
-				endcase
+				next_state = (m_busy[1]) ? 4'b0101 : 4'b0110;
+				fc_enable = 1'b1;
+				fc_index = addr[10:3];
+				fc_tag_in = c_tag_out;
+				fc_offset = (m_busy[1]) ? 3'b100 : 3'b110; 
+				
+				// Write to mem
+				fm_wr = 1'b1;
+				fm_addr = (m_busy[1]) ? {c_tag_out, addr[10:3], 3'b010} : {c_tag_out, addr[10:3], 3'b100}; 
+				fm_data_in = c_data_out;
 			end
 
 			4'b0110: // EVICT_4
 			begin
-				case(m_busy[2])
-					1'b0:
-				        begin
-						next_state = 4'b0111; // EVICT_5
-						
-						// Write to mem
-						fm_wr = 1'b1;
-						fm_rd = 1'b0;
-						fm_addr = {c_tag_out, addr[10:3], 3'b110}; // bank 3
-						fm_data_in = c_data_out;
-					end
-					
-					1'b1:
-					begin
-						next_state = 4'b0110; // EVICT_4
-						fc_enable = 1'b1;
-						fc_index = addr[10:3];
-						fc_tag_in = c_tag_out;
-						fc_offset = 3'b110; // Read word 3
-						
-						// Write to mem
-						fm_wr = 1'b1;
-						fm_rd = 1'b0;
-						fm_addr = {c_tag_out, addr[10:3], 3'b100}; // bank 2
-						fm_data_in = c_data_out;
-					end
-
-					default :
-					begin
-						f_err = 1'b1;
-					end
-				endcase
+				next_state = (m_busy[2]) ? 4'b0110 : 4'b0111;
+				fc_enable = (m_busy[2]) ? 1'b1 : 1'b0;
+				fc_index = (m_busy[2]) ? addr[10:3] : 8'd0;
+				fc_tag_in = (m_busy[2]) ? c_tag_out : 5'd0;
+				fc_offset = (m_busy[2]) ? 3'b110 : 3'b000; 
+				
+				// Write to mem
+				fm_wr = 1'b1;
+				fm_addr = (m_busy[2]) ? {c_tag_out, addr[10:3], 3'b100} : {c_tag_out, addr[10:3], 3'b110}; 
+				fm_data_in = c_data_out;
 			end
 
 			4'b0111: // EVICT_5
 			begin
-				case(m_busy[3])
-					1'b0:
-				        begin
-						next_state = 4'b1000;//MEM_ACC_1
-						fm_wr = 1'b0;
-						fm_rd = 1'b1;
-						fm_addr = {addr[15:3], 3'b000};//bank 0
-					end
-					
-					1'b1:
-					begin
-
-						next_state = 4'b0111; // EVICT_5
-						
-						// Write to mem
-						fm_wr = 1'b1;
-						fm_rd = 1'b0;
-						fm_addr = {c_tag_out, addr[10:3], 3'b110}; // bank 3
-						fm_data_in = c_data_out;
-					end
-
-					default :
-					begin
-						f_err = 1'b1;
-					end
-				endcase
+				next_state = (m_busy[3]) ? 4'b0111 : 4'b1000;
+				fm_wr = (m_busy[3]) ? 1'b1 : 1'b0;
+				fm_rd = (m_busy[3]) ? 1'b0 : 1'b1;
+				fm_addr = (m_busy[3]) ? {c_tag_out, addr[10:3], 3'b110} : {addr[15:3], 3'b000};
+				fm_data_in = (m_busy[3]) ? c_data_out : 16'd0;
 			end
 
 			4'b1110: // ACC_WRITE

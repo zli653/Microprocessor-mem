@@ -105,6 +105,7 @@ module cache_fsm(
 	dff victimway (.q(curr_rand), .d(rand), .clk(clk), .rst(rst));
 	assign rand = (read | write) ? ~curr_rand : curr_rand;
 	// c_sel is 1, choose way 2
+	assign c_err = c_sel ? c_err_2 : c_err_1;
 	assign c_sel = ~curr_c_valid_1 ? 1'b1 : 
 						curr_c_valid_2 ? rand : 1'b0;
 	assign c_hit = curr_c_hit_1 | curr_c_hit_2;
@@ -114,15 +115,32 @@ module cache_fsm(
 	assign curr_c_valid  = c_hit ? ((c_hit_way_num) ? curr_c_valid_2 : curr_c_valid_1) :
 								((c_sel) ? curr_c_valid_2 : curr_c_valid_1);
 	assign curr_c_dirty = c_sel ? curr_c_dirty_2 : curr_c_dirty_1;
-	assign fc_data_in = c_sel ? fc_data_in_2 : fc_data_in_1;
-	assign fc_index = c_sel ? fc_index_2 : fc_index_1;		
-	assign fc_tag_in = c_sel ? fc_tag_in_2 : fc_tag_in_1;		
-	assign fc_offset = c_sel ? fc_offset_2 : fc_offset_1;		
-	assign fc_enable = c_sel ? fc_enable_2 : fc_enable_1;		
-	assign fc_comp = c_sel ? fc_comp_2 : fc_comp_1;		
-	assign fc_write = c_sel ? fc_write_2 : fc_write_1;		
-	assign fc_valid_in = c_sel ? fc_valid_in_2 : fc_valid_in_1;	
+	// assign fc_data_in = c_sel ? fc_data_in_2 : fc_data_in_1;
+	// assign fc_index = c_sel ? fc_index_2 : fc_index_1;		
+	// assign fc_tag_in = c_sel ? fc_tag_in_2 : fc_tag_in_1;		
+	// assign fc_offset = c_sel ? fc_offset_2 : fc_offset_1;		
+	// assign fc_enable = c_sel ? fc_enable_2 : fc_enable_1;		
+	// assign fc_comp = c_sel ? fc_comp_2 : fc_comp_1;		
+	// assign fc_write = c_sel ? fc_write_2 : fc_write_1;		
+	// assign fc_valid_in = c_sel ? fc_valid_in_2 : fc_valid_in_1;	
+	
+	assign fc_data_in_1 = c_sel ? 16'b0 : fc_data_in;
+	assign fc_index_1 = c_sel ? 8'b0 : fc_index;		
+	assign fc_tag_in_1 = c_sel ? 5'b0 : fc_tag_in;		
+	assign fc_offset_1 = c_sel ? 3'b0  : fc_offset;		
+	assign fc_enable_1 = c_sel ? 1'b0  : fc_enable;		
+	assign fc_comp_1 = c_sel ? 1'b0  : fc_comp;		
+	assign fc_write_1 = c_sel ? 1'b0  : fc_write;		
+	assign fc_valid_in_1 = c_sel ? 1'b0  : fc_valid_in;	
 
+	assign fc_data_in_2 = c_sel ? fc_data_in : 16'b0;
+	assign fc_index_2 = c_sel ? fc_index : 16'b0;		
+	assign fc_tag_in_2 = c_sel ? fc_tag_in : 16'b0;		
+	assign fc_offset_2 = c_sel ? fc_offset : 16'b0;		
+	assign fc_enable_2 = c_sel ? fc_enable : 1'b0;		
+	assign fc_comp_2 = c_sel ? fc_comp : 1'b0;		
+	assign fc_write_2 = c_sel ? fc_write : 1'b0;		
+	assign fc_valid_in_2 = c_sel ? fc_valid_in : 1'b0;	
 	// cache_fsm_wrapper fsm (
  //                // Inputs
  //                .addr(curr_addr),.data_in(curr_data_in),.read(curr_read),.write(curr_write),.rst(rst),
