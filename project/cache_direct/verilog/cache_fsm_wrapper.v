@@ -10,9 +10,9 @@ module cache_fsm_wrapper(
 		fs_data_out,fs_done,fs_cachehit,fs_err,next_state_int,data_int
 	);
 
-	initial begin
-		 $monitor("err=%d values = %d%d%d \n", fs_err, c_hit, c_valid, c_dirty );
-	end
+	//initial begin
+	//	 $monitor("err=%d values = %d%d%d \n", fs_err, c_hit, c_valid, c_dirty );
+	//end
 	
 	// Inputs
 	input [15:0] addr,data_in,c_data_out,m_data_out;
@@ -57,7 +57,7 @@ module cache_fsm_wrapper(
 	* 	MEM_ACC_4 :	1011
 	* 	MEM_ACC_5 :	1100
 	* 	MEM_ACC_6 :	1101
-	* 	
+	* 	ACC_WRITE :     1110
 	*/
 
         assign data_int = write ? data_in : 
@@ -142,6 +142,7 @@ module cache_fsm_wrapper(
 				casex({c_hit, c_valid, c_dirty})
 					3'b11x: // Cache hit, return to idle
 					begin
+						next_state = 4'b0000;
 						fs_done = 1'b1;
 						fs_cachehit = 1'b1;
 						fs_data_out = data_in;
@@ -328,13 +329,14 @@ module cache_fsm_wrapper(
 					1'b0:
 					begin
 						//Defaulting back to IDLE
+						next_state = 4'b0000;
 						fs_done = 1'b1;
 						fs_data_out = data_int;
 					end
 					1'b1: // go back to COMP_WRITE
 					begin
-						next_state = 4'b0001;
-						fc_comp = 1'b1;
+						next_state = 4'b1110;
+						fc_comp = 1'b0;
 						fc_write = 1'b1;
 						fc_enable = 1'b1;
 						fc_offset = addr[2:0];
@@ -351,6 +353,7 @@ module cache_fsm_wrapper(
 				casex({c_hit, c_valid, c_dirty})
 					3'b11x: // Cache hit, return to idle
 					begin
+						next_state = 4'b0000;
 						fs_done = 1'b1;
 						fs_cachehit = 1'b1;
 						fs_data_out = data_in;
@@ -551,6 +554,13 @@ module cache_fsm_wrapper(
 					end
 				endcase
 			end
+
+			4'b1110: // ACC_WRITE
+			begin
+				next_state = 4'b0000;
+				fs_done = 1'b1;
+				fs_data_out = data_in;
+			end	
 
 
 			default://DEFAULT to IDLE (Never reached)
