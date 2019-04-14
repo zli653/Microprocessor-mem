@@ -124,10 +124,7 @@ module cache_fsm_wrapper(
 					2'b00:
 					begin
 						// stay in IDLE
-<<<<<<< HEAD
-=======
 						//fs_done = 1'b1;
->>>>>>> c2a5eb5596fe1f409bcb75bd54a83b736829d446
 					end
 					2'b11: // read and write at the same time, print error message      
 					begin
