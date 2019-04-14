@@ -78,7 +78,11 @@ module cache_fsm(
 	dff c_dirty_f (.q(curr_c_dirty), .d(c_dirty), .clk(clk), .rst(rst));
 	dff c_valid_f (.q(curr_c_valid), .d(c_valid), .clk(clk), .rst(rst));
 
+<<<<<<< HEAD
 	assign f_stall = (m_stall&~fs_cachehit) | ((write | read) & ~fs_done);
+=======
+	assign f_stall = (m_stall&~fs_cachehit) | (~fs_done &(read | write));
+>>>>>>> c2a5eb5596fe1f409bcb75bd54a83b736829d446
 	
 	cache_fsm_wrapper fsm (
                 // Inputs
