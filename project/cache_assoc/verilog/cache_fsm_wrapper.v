@@ -1,13 +1,11 @@
 module cache_fsm_wrapper(
 		// Inputs
 		addr,data_in,read,write,rst,
-		c_tag_out_1,c_data_out_1,c_hit_1,c_dirty_1,c_valid_1,c_err_1,
-		c_tag_out_2,c_data_out_2,c_hit_2,c_dirty_2,c_valid_2,c_err_2,
+		c_tag_out,c_data_out,c_hit,c_dirty,c_valid,c_err,
 		m_data_out,m_busy,m_err,state_int,data_prev,
 
 		// Outputs	
-		fc_enable_1,fc_tag_in_1,fc_index_1,fc_offset_1,fc_data_in_1,fc_comp_1,fc_write_1,fc_valid_in_1,
-		fc_enable_2,fc_tag_in_2,fc_index_2,fc_offset_2,fc_data_in_2,fc_comp_2,fc_write_2,fc_valid_in_2,
+		fc_enable,fc_tag_in,fc_index,fc_offset,fc_data_in,fc_comp,fc_write,fc_valid_in,
 		fm_addr,fm_data_in,fm_wr,fm_rd,
 		fs_data_out,fs_done,fs_cachehit,fs_err,next_state_int,data_int
 	);
@@ -17,21 +15,17 @@ module cache_fsm_wrapper(
 	//end
 	
 	// Inputs
-	input [15:0] addr,data_in,m_data_out,c_data_out_1,c_data_out_2;
-	input [4:0] c_tag_out_1,c_tag_out_2;
+	input [15:0] addr,data_in,c_data_out,m_data_out;
+	input [4:0] c_tag_out;
 	input [3:0] m_busy;
-	input c_hit_1,c_dirty_1,c_valid_1,c_err_1;
-	input c_hit_2,c_dirty_2,c_valid_2,c_err_2;
-	input m_err,read,write,rst;
+	input c_hit,c_dirty,c_valid,c_err,m_err,read,write,rst;
 		
 	// Outputs	
-	output reg [15:0] fm_addr,fm_data_in,fs_data_out,fc_data_in_1,fc_data_in_2;
-	output reg [7:0] fc_index_1,fc_index_2;
-	output reg [4:0] fc_tag_in_1,fc_tag_in_2;
-	output reg [2:0] fc_offset_1,fc_offset_2;
-	output reg fc_enable_1,fc_comp_1,fc_write_1,fc_valid_in_1;
-	output reg fc_enable_2,fc_comp_2,fc_write_2,fc_valid_in_2;
-	output reg [2:0] fm_wr,fm_rd,fs_done,fs_cachehit;
+	output reg [15:0] fm_addr,fm_data_in,fs_data_out,fc_data_in;
+	output reg [7:0] fc_index;
+	output reg [4:0] fc_tag_in;
+	output reg [2:0] fc_offset;
+	output reg fc_enable,fc_comp,fc_write,fc_valid_in,fm_wr,fm_rd,fs_done,fs_cachehit;
 
 	// Outputs not in case statement
 	output fs_err;
@@ -74,37 +68,27 @@ module cache_fsm_wrapper(
 	//assign state_int = state;
 	assign next_state_int = next_state;
 	
-	assign fs_err = c_err_1 | c_err_2 | m_err | f_err;
+	assign fs_err = c_err | m_err | f_err;
 
 	always@(*) begin	
 		
 		// Set to default, only change necessary
-		fm_wr			= 1'b0;
-		fm_rd			= 1'b0;
-		fm_addr 		= 16'd0;
-		fm_data_in		= 16'd0;
-		
-		fc_data_in_1	= 16'd0;
-		fc_index_1		= 8'd0;
-		fc_tag_in_1		= 5'd0;
-		fc_offset_1		= 3'd0;
-		fc_enable_1		= 1'b0;
-		fc_comp_1		= 1'b0;
-		fc_write_1		= 1'b0;
-		fc_valid_in_1	= 1'b1; // Should always be valid execpt on reset
-		fc_data_in_2	= 16'd0;
-		fc_index_2		= 8'd0;
-		fc_tag_in_2		= 5'd0;
-		fc_offset_2		= 3'd0;
-		fc_enable_2		= 1'b0;
-		fc_comp_2		= 1'b0;
-		fc_write_2		= 1'b0;
-		fc_valid_in_2	= 1'b1; // Should always be valid execpt on reset
-
-		fs_done			= 1'b0;
-		fs_cachehit		= 1'b0;
-		fs_data_out		= 16'd0;
-		f_err			= 1'b0;
+		fm_addr 	= 16'd0;
+		fm_data_in	= 16'd0;
+		fc_data_in	= 16'd0;
+		fc_index	= 8'd0;
+		fc_tag_in	= 5'd0;
+		fc_offset	= 3'd0;
+		fc_enable	= 1'b0;
+		fc_comp		= 1'b0;
+		fc_write	= 1'b0;
+		fc_valid_in	= 1'b1; // Should always be valid execpt on reset
+		fm_wr		= 1'b0;
+		fm_rd		= 1'b0;
+		fs_done		= 1'b0;
+		fs_cachehit	= 1'b0;
+		fs_data_out	= 16'd0;
+		f_err		= 1'b0;
 		read_offset 	= 3'b000;
 		
 		state = state_int;	
