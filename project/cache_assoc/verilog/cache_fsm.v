@@ -96,10 +96,10 @@ module cache_fsm(
 	dff c_valid_f_2 (.q(curr_c_valid_2), .d(c_valid_2), .clk(clk), .rst(rst));
 	
 	assign f_stall = (m_stall&~fs_cachehit) | ((write | read) & ~fs_done);
-/*	always@(c_sel)
+	always@(c_rep)
 	begin
-		$display("c_sel: %d", c_sel);
-	end*/
+		$display("c_rep: %d", c_rep);
+	end
 		
 	wire curr_rand, rand, c_sel, c_hit, c_hit_way_num;
 	wire fc_enable, fc_comp, fc_write, fc_valid_in;
@@ -110,7 +110,7 @@ module cache_fsm(
 	wire curr_c_sel;
 
 	dff victimway (.q(curr_rand), .d(rand), .clk(clk), .rst(rst));
-	assign rand = (read | write) ? ~curr_rand : curr_rand;
+	assign rand = ((read | write)&idle) ? ~curr_rand : curr_rand;
 	
 	// c_sel is 1, choose way 2
 	assign c_err = c_sel ? c_err_2 : c_err_1;
@@ -124,34 +124,31 @@ module cache_fsm(
 	// Which cache had hit (1 = way 2)
 	assign c_hit_way_num = c_hit & curr_c_hit_2;
 	// If hit : pick correct data out. 
-	assign curr_c_data_out = c_hit ? (c_hit_way_num ? curr_c_data_out_2 : curr_c_data_out_1) :
-					(c_sel ? curr_c_data_out_2 : curr_c_data_out_1);
 	
-	
-	assign curr_c_tag_out = c_hit ? (c_hit_way_num ? curr_c_tag_out_2 : curr_c_tag_out_1) :
-				(c_sel ? curr_c_tag_out_2 : curr_c_tag_out_1);
+	assign c_rep = c_hit ? c_hit_way_num : c_sel;	
+	assign curr_c_tag_out = c_rep ? curr_c_tag_out_2 : curr_c_tag_out_1;
+	assign curr_c_data_out = c_rep ? curr_c_data_out_2 : curr_c_data_out_1;
 					
-	assign curr_c_valid  = c_hit ? ((c_hit_way_num) ? curr_c_valid_2 : curr_c_valid_1) :
-					((c_sel) ? curr_c_valid_2 : curr_c_valid_1);
+	assign curr_c_valid  = c_rep ? curr_c_valid_2 : curr_c_valid_1;
 	assign curr_c_dirty = c_sel ? curr_c_dirty_2 : curr_c_dirty_1;
 	
-	assign fc_data_in_1 = ~c_sel|idle ? fc_data_in: 16'b0;
-	assign fc_index_1 = ~c_sel|idle ? fc_index: 8'b0;		
-	assign fc_tag_in_1 = ~c_sel|idle ? fc_tag_in : 5'b0;		
-	assign fc_offset_1 = ~c_sel|idle ? fc_offset : 3'b0;		
-	assign fc_enable_1 = ~c_sel|idle ? fc_enable : 1'b0;		
-	assign fc_comp_1 = ~c_sel|idle ?  fc_comp : 1'b0;		
-	assign fc_write_1 = ~c_sel|idle ? fc_write : 1'b0;		
-	assign fc_valid_in_1 = ~c_sel|idle ? fc_valid_in : 1'b1;	
+	assign fc_data_in_1 = ~c_rep|idle ? fc_data_in: 16'b0;
+	assign fc_index_1 = ~c_rep|idle ? fc_index: 8'b0;		
+	assign fc_tag_in_1 = ~c_rep|idle ? fc_tag_in : 5'b0;		
+	assign fc_offset_1 = ~c_rep|idle ? fc_offset : 3'b0;		
+	assign fc_enable_1 = ~c_rep|idle ? fc_enable : 1'b0;		
+	assign fc_comp_1 = ~c_rep|idle ?  fc_comp : 1'b0;		
+	assign fc_write_1 = ~c_rep|idle ? fc_write : 1'b0;		
+	assign fc_valid_in_1 = ~c_rep|idle ? fc_valid_in : 1'b1;	
 
-	assign fc_data_in_2 = c_sel|idle ? fc_data_in : 16'b0;
-	assign fc_index_2 = c_sel|idle ? fc_index : 16'b0;		
-	assign fc_tag_in_2 = c_sel|idle ? fc_tag_in : 16'b0;		
-	assign fc_offset_2 = c_sel|idle ? fc_offset : 16'b0;		
-	assign fc_enable_2 = c_sel|idle ? fc_enable : 1'b0;		
-	assign fc_comp_2 = c_sel|idle ? fc_comp : 1'b0;		
-	assign fc_write_2 = c_sel|idle ? fc_write : 1'b0;		
-	assign fc_valid_in_2 = c_sel|idle ? fc_valid_in : 1'b1;	
+	assign fc_data_in_2 = c_rep|idle ? fc_data_in : 16'b0;
+	assign fc_index_2 = c_rep|idle ? fc_index : 16'b0;		
+	assign fc_tag_in_2 = c_rep|idle ? fc_tag_in : 16'b0;		
+	assign fc_offset_2 = c_rep|idle ? fc_offset : 16'b0;		
+	assign fc_enable_2 = c_rep|idle ? fc_enable : 1'b0;		
+	assign fc_comp_2 = c_rep|idle ? fc_comp : 1'b0;		
+	assign fc_write_2 = c_rep|idle ? fc_write : 1'b0;		
+	assign fc_valid_in_2 = c_rep|idle ? fc_valid_in : 1'b1;	
 
 
 /*	assign fc_data_in_1 = c_sel ? 16'b0 : fc_data_in;
