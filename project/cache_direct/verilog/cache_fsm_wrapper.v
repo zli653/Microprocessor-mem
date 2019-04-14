@@ -356,7 +356,7 @@ module cache_fsm_wrapper(
 						next_state = 4'b0000;
 						fs_done = 1'b1;
 						fs_cachehit = 1'b1;
-						fs_data_out = data_in;
+						fs_data_out = c_data_out;
 					end	
 						
 					3'b010: // Miss, not-dirty
