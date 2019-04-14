@@ -333,16 +333,9 @@ module cache_fsm_wrapper(
 						fs_done = 1'b1;
 						fs_data_out = data_int;
 					end
-					1'b1: // go back to COMP_WRITE
+					1'b1: // go back to ACC_WRITE
 					begin
 						next_state = 4'b1110;
-						fc_comp = 1'b0;
-						fc_write = 1'b1;
-						fc_enable = 1'b1;
-						fc_offset = addr[2:0];
-						fc_index = addr[10:3];
-						fc_tag_in = addr[15:11];
-						fc_data_in = data_in;
 					end	
 				endcase	
 			end
@@ -558,6 +551,13 @@ module cache_fsm_wrapper(
 			4'b1110: // ACC_WRITE
 			begin
 				next_state = 4'b0000;
+				fc_comp = 1'b1;
+				fc_write = 1'b1;
+				fc_enable = 1'b1;
+				fc_offset = addr[2:0];
+				fc_index = addr[10:3];
+				fc_tag_in = addr[15:11];
+				fc_data_in = data_in;
 				fs_done = 1'b1;
 				fs_data_out = data_in;
 			end	
