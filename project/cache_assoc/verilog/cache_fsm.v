@@ -44,7 +44,9 @@ module cache_fsm(
 	wire curr_write, curr_read;
 	wire curr_c_valid_1, curr_c_dirty_1, curr_c_hit_1;
 	wire curr_c_valid_2, curr_c_dirty_2, curr_c_hit_2;
+	wire idle;
 
+	assign idle = (state_int == 4'b0000)&(next_state_int == 4'b0001 | next_state_int == 4'b0010);
 	/*
 	* _______STATE_KEY______
 	*
@@ -94,37 +96,65 @@ module cache_fsm(
 	dff c_valid_f_2 (.q(curr_c_valid_2), .d(c_valid_2), .clk(clk), .rst(rst));
 	
 	assign f_stall = (m_stall&~fs_cachehit) | ((write | read) & ~fs_done);
-	
-	wire curr_rand, rand, c_sel, c_hit, c_hit_way_num, c_valid, c_dirty;
+/*	always@(c_sel)
+	begin
+		$display("c_sel: %d", c_sel);
+	end*/
+		
+	wire curr_rand, rand, c_sel, c_hit, c_hit_way_num;
 	wire fc_enable, fc_comp, fc_write, fc_valid_in;
 	wire [2:0] fc_offset;
-	wire [4:0] c_tag_out, fc_tag_in;
+	wire [4:0] fc_tag_in;
 	wire [7:0] fc_index;
-	wire [15:0] c_data_out, fc_data_in;
+	wire [15:0] fc_data_in;
+	wire curr_c_sel;
 
 	dff victimway (.q(curr_rand), .d(rand), .clk(clk), .rst(rst));
 	assign rand = (read | write) ? ~curr_rand : curr_rand;
+	
 	// c_sel is 1, choose way 2
 	assign c_err = c_sel ? c_err_2 : c_err_1;
-	assign c_sel = ~curr_c_valid_1 ? 1'b1 : 
-						curr_c_valid_2 ? rand : 1'b0;
+	assign c_sel = (idle) ? (~curr_c_valid_1 ? 1'b0 : 
+			curr_c_valid_2 ? curr_rand : 1'b1) :
+			curr_c_sel;
+	dff c_sel_f_2 (.q(curr_c_sel), .d(c_sel), .clk(clk), .rst(rst));
+
+	// Did hit occur?	
 	assign c_hit = curr_c_hit_1 | curr_c_hit_2;
+	// Which cache had hit (1 = way 2)
 	assign c_hit_way_num = c_hit & curr_c_hit_2;
-	assign curr_c_data_out = c_hit_way_num ? curr_c_data_out_2 : curr_c_data_out_1;
-	assign curr_c_tag_out = c_sel ? curr_c_tag_out_2 : curr_c_tag_out_1;
-	assign curr_c_valid  = c_hit ? ((c_hit_way_num) ? curr_c_valid_2 : curr_c_valid_1) :
-								((c_sel) ? curr_c_valid_2 : curr_c_valid_1);
-	assign curr_c_dirty = c_sel ? curr_c_dirty_2 : curr_c_dirty_1;
-	// assign fc_data_in = c_sel ? fc_data_in_2 : fc_data_in_1;
-	// assign fc_index = c_sel ? fc_index_2 : fc_index_1;		
-	// assign fc_tag_in = c_sel ? fc_tag_in_2 : fc_tag_in_1;		
-	// assign fc_offset = c_sel ? fc_offset_2 : fc_offset_1;		
-	// assign fc_enable = c_sel ? fc_enable_2 : fc_enable_1;		
-	// assign fc_comp = c_sel ? fc_comp_2 : fc_comp_1;		
-	// assign fc_write = c_sel ? fc_write_2 : fc_write_1;		
-	// assign fc_valid_in = c_sel ? fc_valid_in_2 : fc_valid_in_1;	
+	// If hit : pick correct data out. 
+	assign curr_c_data_out = c_hit ? (c_hit_way_num ? curr_c_data_out_2 : curr_c_data_out_1) :
+					(c_sel ? curr_c_data_out_2 : curr_c_data_out_1);
 	
-	assign fc_data_in_1 = c_sel ? 16'b0 : fc_data_in;
+	
+	assign curr_c_tag_out = c_hit ? (c_hit_way_num ? curr_c_tag_out_2 : curr_c_tag_out_1) :
+				(c_sel ? curr_c_tag_out_2 : curr_c_tag_out_1);
+					
+	assign curr_c_valid  = c_hit ? ((c_hit_way_num) ? curr_c_valid_2 : curr_c_valid_1) :
+					((c_sel) ? curr_c_valid_2 : curr_c_valid_1);
+	assign curr_c_dirty = c_sel ? curr_c_dirty_2 : curr_c_dirty_1;
+	
+	assign fc_data_in_1 = ~c_sel|idle ? fc_data_in: 16'b0;
+	assign fc_index_1 = ~c_sel|idle ? fc_index: 8'b0;		
+	assign fc_tag_in_1 = ~c_sel|idle ? fc_tag_in : 5'b0;		
+	assign fc_offset_1 = ~c_sel|idle ? fc_offset : 3'b0;		
+	assign fc_enable_1 = ~c_sel|idle ? fc_enable : 1'b0;		
+	assign fc_comp_1 = ~c_sel|idle ?  fc_comp : 1'b0;		
+	assign fc_write_1 = ~c_sel|idle ? fc_write : 1'b0;		
+	assign fc_valid_in_1 = ~c_sel|idle ? fc_valid_in : 1'b1;	
+
+	assign fc_data_in_2 = c_sel|idle ? fc_data_in : 16'b0;
+	assign fc_index_2 = c_sel|idle ? fc_index : 16'b0;		
+	assign fc_tag_in_2 = c_sel|idle ? fc_tag_in : 16'b0;		
+	assign fc_offset_2 = c_sel|idle ? fc_offset : 16'b0;		
+	assign fc_enable_2 = c_sel|idle ? fc_enable : 1'b0;		
+	assign fc_comp_2 = c_sel|idle ? fc_comp : 1'b0;		
+	assign fc_write_2 = c_sel|idle ? fc_write : 1'b0;		
+	assign fc_valid_in_2 = c_sel|idle ? fc_valid_in : 1'b1;	
+
+
+/*	assign fc_data_in_1 = c_sel ? 16'b0 : fc_data_in;
 	assign fc_index_1 = c_sel ? 8'b0 : fc_index;		
 	assign fc_tag_in_1 = c_sel ? 5'b0 : fc_tag_in;		
 	assign fc_offset_1 = c_sel ? 3'b0  : fc_offset;		
@@ -141,25 +171,11 @@ module cache_fsm(
 	assign fc_comp_2 = c_sel ? fc_comp : 1'b0;		
 	assign fc_write_2 = c_sel ? fc_write : 1'b0;		
 	assign fc_valid_in_2 = c_sel ? fc_valid_in : 1'b0;	
-	// cache_fsm_wrapper fsm (
- //                // Inputs
- //                .addr(curr_addr),.data_in(curr_data_in),.read(curr_read),.write(curr_write),.rst(rst),
- //                .c_tag_out_1(curr_c_tag_out_1),.c_data_out_1(curr_c_data_out_1),.c_hit_1(curr_c_hit_1),.c_dirty_1(curr_c_dirty_1),.c_valid_1(curr_c_valid_1),.c_err_1(c_err_1),
- //                .c_tag_out_2(curr_c_tag_out_2),.c_data_out_2(curr_c_data_out_2),.c_hit_2(curr_c_hit_2),.c_dirty_2(curr_c_dirty_2),.c_valid_2(curr_c_valid_2),.c_err_2(c_err_2),
- //                .m_data_out(curr_m_data_out),.m_busy(curr_m_busy),.m_err(m_err),.state_int(state_int),.data_prev(data_prev),
-
- //                // Outputs
- //                .fc_enable_1(fc_enable_1),.fc_tag_in_1(fc_tag_in_1),.fc_index_1(fc_index_1),.fc_offset_1(fc_offset_1),
- //                .fc_data_in_1(fc_data_in_1),.fc_comp_1(fc_comp_1),.fc_write_1(fc_write_1),.fc_valid_in_1(fc_valid_in_1),
- //                .fc_enable_2(fc_enable_2),.fc_tag_in_2(fc_tag_in_2),.fc_index_2(fc_index_2),.fc_offset_2(fc_offset_2),
- //                .fc_data_in_2(fc_data_in_2),.fc_comp_2(fc_comp_2),.fc_write_2(fc_write_2),.fc_valid_in_2(fc_valid_in_2),
- //                .fm_addr(fm_addr),.fm_data_in(fm_data_in),.fm_wr(fm_wr),.fm_rd(fm_rd),
- //                .fs_data_out(fs_data_out),.fs_done(fs_done),.fs_cachehit(fs_cachehit),.fs_err(fs_err),.next_state_int(next_state_int),.data_int(data_int)
- //        );
-	 cache_fsm_wrapper fsm (
+*/
+	cache_fsm_wrapper fsm (
 	                // Inputs
 	                .addr(curr_addr),.data_in(curr_data_in),.read(curr_read),.write(curr_write),.rst(rst),
-	                .c_tag_out(curr_c_tag_out),.c_data_out(curr_c_data_out),.c_hit(curr_c_hit),.c_dirty(curr_c_dirty),.c_valid(curr_c_valid),.c_err(c_err),
+	                .c_tag_out(curr_c_tag_out),.c_data_out(curr_c_data_out),.c_hit(c_hit),.c_dirty(curr_c_dirty),.c_valid(curr_c_valid),.c_err(c_err),
 	                .m_data_out(curr_m_data_out),.m_busy(curr_m_busy),.m_err(m_err),.state_int(state_int),.data_prev(data_prev),
 
 	                // Outputs
