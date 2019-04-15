@@ -46,7 +46,9 @@ module cache_fsm(
 	wire curr_c_valid_2, curr_c_dirty_2, curr_c_hit_2;
 	wire idle;
 
-	assign idle = (state_int == 4'b0001 | state_int == 4'b0010);
+	assign idle = (next_state_int == 4'b0001) | (next_state_int == 4'b0010);
+	assign idle_next = (state_int == 4'b0001) | (state_int == 4'b0010);
+
 	/*
 	* _______STATE_KEY______
 	*
@@ -110,7 +112,7 @@ module cache_fsm(
 	
 	// c_sel is 1, choose way 2
 	assign c_err = c_sel ? c_err_2 : c_err_1;
-	assign c_sel = (idle) ? (~curr_c_valid_1 ? 1'b0 : 
+	assign c_sel = (idle_next) ? (~curr_c_valid_1 ? 1'b0 : 
 			(curr_c_valid_2 ? curr_rand : 1'b1) ) :
 				// TODO: only for optimization
 				// both are valid, cannot be both hit
@@ -135,19 +137,25 @@ module cache_fsm(
 	// assign curr_c_valid  = c_rep ? curr_c_valid_2 : curr_c_valid_1;
 	// assign curr_c_dirty = c_sel ? curr_c_dirty_2 : curr_c_dirty_1;
 	
-	wire curr_c_hit_valid, curr_c_hit_dirty;
+	wire curr_c_hit_valid, curr_c_hit_dirty, one_hit, both_hit;
 	wire [15:0] curr_c_return_data_out;
-	assign c_hit = curr_c_hit_1 ^ curr_c_hit_2;
-	assign curr_c_valid  = (c_hit & curr_c_hit_valid) ? curr_c_hit_valid : 
+	assign one_hit = curr_c_hit_1 ^ curr_c_hit_2;
+	assign both_hit = (curr_c_hit_1 & curr_c_hit_2) & (curr_c_valid_2 | curr_c_valid_1);
+	// assume both hit, only one is valid
+	assign hit_num = both_hit ? curr_c_valid_2 :
+						one_hit ? curr_c_hit_2 : 1'b0;
+	assign c_hit = one_hit | both_hit;
+	
+	assign curr_c_valid  = c_hit ? curr_c_hit_valid : 
 							c_sel ? curr_c_valid_2 : curr_c_valid_1;
-	assign curr_c_dirty = (c_hit & curr_c_hit_valid) ? curr_c_hit_dirty : 
+	assign curr_c_dirty = c_hit ? curr_c_hit_dirty : 
 							c_sel ? curr_c_valid_2 : curr_c_valid_1;
 	assign curr_c_tag_out = c_sel ? curr_c_tag_out_2 : curr_c_tag_out_1;
-	assign curr_c_data_out = (c_hit & curr_c_hit_valid) ? curr_c_return_data_out :
+	assign curr_c_data_out = c_hit ? curr_c_return_data_out :
 								c_sel ? curr_c_data_out_2 : curr_c_data_out_1;
 	
-	assign curr_c_hit_valid= (curr_c_hit_2 ? curr_c_valid_2 : curr_c_valid_1);
-	assign curr_c_hit_dirty= (curr_c_hit_2 ? curr_c_dirty_2 : curr_c_dirty_1);
+	assign curr_c_hit_valid = (hit_num ? curr_c_valid_2 : curr_c_valid_1);
+	assign curr_c_hit_dirty = (hit_num ? curr_c_dirty_2 : curr_c_dirty_1);
 	// assign curr_c_return = curr_c_hit & curr_c_hit_valid;
 	assign curr_c_return_data_out = curr_c_hit_2 ? curr_c_data_out_2 : curr_c_data_out_1;
 	// assign curr_c_data_out = curr_c_return ? curr_c_return_data_out : 
