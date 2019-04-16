@@ -83,7 +83,7 @@ wire m_stall;
         .enable               (fc_enable_1),
         .clk                  (clk),
         .rst                  (rst),
-        .createdump           (1'b1),
+        .createdump           (createdump),
         .tag_in               (fc_tag_in_1),
         .index                (fc_index_1),
         .offset               (fc_offset_1),
