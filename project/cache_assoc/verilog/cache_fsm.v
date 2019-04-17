@@ -157,7 +157,7 @@ module cache_fsm(
 	assign curr_c_hit_valid = (hit_num ? curr_c_valid_2 : curr_c_valid_1);
 	assign curr_c_hit_dirty = (hit_num ? curr_c_dirty_2 : curr_c_dirty_1);
 	// assign curr_c_return = curr_c_hit & curr_c_hit_valid;
-	assign curr_c_return_data_out = curr_c_hit_2 ? curr_c_data_out_2 : curr_c_data_out_1;
+	assign curr_c_return_data_out = hit_num ? curr_c_data_out_2 : curr_c_data_out_1;
 	// assign curr_c_data_out = curr_c_return ? curr_c_return_data_out : 
 	// 				curr_c_rep ? curr_c_data_out_2 : curr_c_data_out_1;
 	// assign curr_c_valid = curr_c_hit ? curr_c_hit_valid : 
