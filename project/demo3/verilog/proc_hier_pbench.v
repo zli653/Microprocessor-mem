@@ -127,7 +127,7 @@ module proc_hier_pbench();
    // Edit the example below. You must change the signal
    // names on the right hand side
     
-   //assign PC = DUT.PC_Out;
+/*   //assign PC = DUT.PC_Out;
    //assign Inst = DUT.Instruction_f;
    
    assign RegWrite = DUT.p0.regWrite;
@@ -173,8 +173,68 @@ module proc_hier_pbench();
    
    assign Halt = DUT.p0.haltxout;
    // Processor halted
+  */ 
+  assign PC = DUT.p0.FetchStage.PCIn;
+   //THEIRS: assign PC = DUT.PC_Out;
+   //THEIRS: assign Inst = DUT.Instruction_f;
+   assign Inst = DUT.p0.fetchToDec.DecInstrOut;
+
+   assign RegWrite = DUT.p0.MemToWb.RegWrite_todec;
+   //assign RegWrite = DUT.p0.DecodeStage.RegWrite;
+   //THEIRS: assign RegWrite = DUT.p0.regWrite;
+   // Is register file being written to, one bit signal (1 means yes, 0 means no)
+   //   
+   assign WriteRegister = DUT.p0.DecodeStage.WriteRegSel;
+   //THEIRS: assign WriteRegister = DUT.p0.DstwithJmout;
+   // The name of the register being written to. (3 bit signal)
+  
+   assign WriteData = DUT.p0.DecodeStage.wb;
+   //THEIRS: assign WriteData = DUT.p0.wData;
+   // Data being written to the register. (16 bits)
+  
+   assign MemRead =  DUT.p0.MemoryStage.C_DMemEn & DUT.p0.MemoryStage.Done & ~DUT.p0.MemoryStage.C_DMemWrite;
+   //THEIRS: assign MemRead =  (DUT.p0.memRxout & ~DUT.p0.notdonem);
+   // Is memory being read, one bit signal (1 means yes, 0 means no)
    
+   assign MemWrite = (DUT.p0.MemoryStage.C_DMemEn & DUT.p0.MemoryStage.Done & DUT.p0.MemoryStage.C_DMemWrite);
+   //THEIRS: assign MemWrite = (DUT.p0.memWxout & ~DUT.p0.notdonem);
+   // Is memory being written to (1 bit signal)
    
+   assign MemAddress = DUT.p0.MemoryStage.ALUOut;
+   //THERIS: assign MemAddress = DUT.p0.data1out;
+   // Address to access memory with (for both reads and writes to memory, 16 bits)
+  
+   assign MemDataIn = DUT.p0.MemoryStage.ReadData2; 
+   //THERIS: assign MemDataIn = DUT.p0.data2out;
+   // Data to be written to memory for memory writes (16 bits)
+   
+   assign MemDataOut = DUT.p0.MemoryStage.MemOut;
+   //THEIRS: assign MemDataOut = DUT.p0.readData;
+   // Data read from memory for memory reads (16 bits)
+
+   // new added 05/03
+   assign ICacheReq = DUT.p0.MemoryStage.MemOut;
+   //THEIRS: assign ICacheReq = DUT.p0.readData;
+   // Signal indicating a valid instruction read request to cache
+   // Above assignment is a dummy example
+   
+   assign ICacheHit = DUT.p0.MemoryStage.MemOut;
+   //THEIRS: assign ICacheHit = DUT.p0.readData;
+   // Signal indicating a valid instruction cache hit
+   // Above assignment is a dummy example
+
+   assign DCacheReq = DUT.p0.MemoryStage.MemOut;
+   //THEIRS: assign DCacheReq = DUT.p0.readData;
+   // Signal indicating a valid instruction data read or write request to cache
+   // Above assignment is a dummy example
+   //    
+   assign DCacheHit = DUT.p0.MemoryStage.MemOut;
+   //THEIRS: assign DCacheHit = DUT.p0.readData;
+   // Signal indicating a valid data cache hit
+   assign Halt = DUT.p0.FetchStage.Halt;
+   //THEIRS: assign Halt = DUT.p0.haltxout;
+   // Processor halted
+ 
    /* Add anything else you want here */
 
    
