@@ -1,4 +1,5 @@
 
+
 module fetch (
 	//outputs
 	err, PCInc, Instr, nop,
@@ -52,7 +53,8 @@ module fetch (
 	//dont care about datain, never writing to this mem
 	//started addr at zero on Rst
 	
-	stallmem imem(.DataOut(Instr_int), .Done(Done), .Stall(Stall), .CacheHit(CacheHit), .err(err), .Addr(PCIn), 
+	
+	mem_system imem(.DataOut(Instr_int), .Done(Done), .Stall(Stall), .CacheHit(CacheHit), .err(err), .Addr(PCIn), 
 			.DataIn(16'd0), .Rd(1'b1), .Wr(1'b0), .createdump(1'b1), .clk(clk), .rst(rst));
 	/*assign Stall = 1'b0;
 	assign Done = 1'b1;
