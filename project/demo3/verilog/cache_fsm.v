@@ -188,7 +188,7 @@ module cache_fsm(
 
 	cache_fsm_wrapper fsm (
 	                // Inputs
-	                .addr(curr_addr),.data_in(curr_data_in),.read(curr_read_int),.write(curr_write_int),.rst(rst),
+	                .addr(addr),.data_in(curr_data_in),.read(curr_read_int),.write(curr_write_int),.rst(rst),
 	                .c_tag_out(curr_c_tag_out),.c_data_out(curr_c_data_out),.c_hit(c_hit),.c_dirty(curr_c_dirty),.c_valid(curr_c_valid),.c_err(c_err),
 	                .m_data_out(curr_m_data_out),.m_busy(curr_m_busy),.m_err(m_err),.state_int(state_int),.data_prev(data_prev),
 

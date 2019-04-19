@@ -107,6 +107,7 @@ module cache_fsm_wrapper(
 				fc_index = addr[10:3];
 				fc_tag_in = addr[15:11];
 				fc_data_in = ({write, read} == 2'b10) ? data_in : 16'd0;
+				fc_data_in = data_in;
 				f_err = read & write;
 			end
 
