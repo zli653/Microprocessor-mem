@@ -82,7 +82,7 @@ module decode(
 
 	// Register file logic (WriteEn is control signal)
 	// internally
-	rf RegFile(.readData1(ReadData1), .readData2(ReadData2), .err(err_2), .clk(clk), .rst(rst), 
+	rf_bypass RegFile(.readData1(ReadData1), .readData2(ReadData2), .err(err_2), .clk(clk), .rst(rst), 
 		.readReg1Sel(instruct[10:8]), .readReg2Sel(instruct[7:5]), .writeRegSel(WriteRegSel), 
 		.writeData(wb), .writeEn(RegWrite_todec));
 	

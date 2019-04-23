@@ -20,15 +20,12 @@ module hazard(
 	output En;
 	
 
-	regwrite WbRegWrite_stallunit(.RegDst(WbRegDst), .instruct(WbInstruct), .decInstruct(DecInstruct), .stall(stallWb),
-	       	.RegWrite(WbRegWrite), .ALUSrc2(ALUSrc2), .DMemWrite(DMemWrite), .PCImm(PCImm), .Lbi(Lbi), .Set(Set));
-
 	regwrite MemRegWrite_stallunit(.RegDst(MemRegDst), .instruct(MemInstruct), .decInstruct(DecInstruct), .stall(stallMem),
 	       	.RegWrite(MemRegWrite), .ALUSrc2(ALUSrc2), .DMemWrite(DMemWrite), .PCImm(PCImm), .Lbi(Lbi), .Set(Set));
 
 	regwrite ExRegWrite_stallunit(.RegDst(ExRegDst), .instruct(ExInstruct), .decInstruct(DecInstruct), .stall(stallEx),
 	       	.RegWrite(ExRegWrite), .ALUSrc2(ALUSrc2), .DMemWrite(DMemWrite), .PCImm(PCImm), .Lbi(Lbi), .Set(Set));
 
-	assign En = ~(stallWb | stallMem | stallEx);
+	assign En = ~( stallMem | stallEx);
 
 endmodule
