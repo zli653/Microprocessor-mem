@@ -116,7 +116,7 @@ module cache_fsm_wrapper(
 				fs_done = ({c_hit, c_valid} == 2'b11);
 				fs_cachehit = ({c_hit, c_valid} == 2'b11);
 				fs_data_out = ({c_hit, c_valid} != 2'b11) ? 16'd0 : 
-					read ? c_data_out : data_in; // TODO: Only works for comp write
+					read ? c_data_out : data_in; 
 			end
 
 			4'b0001: // EVICT_1

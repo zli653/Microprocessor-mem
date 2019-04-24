@@ -44,11 +44,10 @@ module cache_fsm(
 	wire write, read;
 	wire c_valid_1, c_dirty_1, c_hit_1;
 	wire c_valid_2, c_dirty_2, c_hit_2;
-	wire idle;
+	wire idle, idle_next;
 	wire read_int, write_int;
 
-	assign idle = (next_state_int == 4'b0001) | (next_state_int == 4'b0010);
-	assign idle_next = (state_int == 4'b0001) | (state_int == 4'b0010);
+	assign idle = (state_int == 4'b0000);
 
 	//assign read_int = (read&~read) ? 1'b0 : read;
 	//assign write_int = (write&~write) ? 1'b0 : write;
@@ -82,25 +81,6 @@ module cache_fsm(
 	
 	// Holds state for state machine
 	dff state_ff [3:0] (.q(state_int), .d(next_state_int), .clk(clk), .rst(rst));
-	/*dff write_ff (.q(write), .d(write), .clk(clk), .rst(rst));	
-	dff read_ff (.q(read), .d(read), .clk(clk), .rst(rst));
-	dff addr_f [15:0] (.q(addr), .d(addr), .clk(clk), .rst(rst));
-	dff data_in_f [15:0] (.q(data_in), .d(data_in), .clk(clk), .rst(rst));
-	dff m_data_out_f [15:0] (.q(m_data_out), .d(m_data_out), .clk(clk), .rst(rst));
-	dff m_busy_f [3:0] (.q(m_busy), .d(m_busy), .clk(clk), .rst(rst));
-	
-	dff c_data_out_f_1 [15:0] (.q(c_data_out_1), .d(c_data_out_1), .clk(clk), .rst(rst));
-	dff c_tag_out_f_1 [4:0] (.q(c_tag_out_1), .d(c_tag_out_1), .clk(clk), .rst(rst));
-	dff c_hit_f_1 (.q(c_hit_1), .d(c_hit_1), .clk(clk), .rst(rst));
-	dff c_dirty_f_1 (.q(c_dirty_1), .d(c_dirty_1), .clk(clk), .rst(rst));
-	dff c_valid_f_1 (.q(c_valid_1), .d(c_valid_1), .clk(clk), .rst(rst));
-	
-	dff c_data_out_f_2 [15:0] (.q(c_data_out_2), .d(c_data_out_2), .clk(clk), .rst(rst));
-	dff c_tag_out_f_2 [4:0] (.q(c_tag_out_2), .d(c_tag_out_2), .clk(clk), .rst(rst));
-	dff c_hit_f_2 (.q(c_hit_2), .d(c_hit_2), .clk(clk), .rst(rst));
-	dff c_dirty_f_2 (.q(c_dirty_2), .d(c_dirty_2), .clk(clk), .rst(rst));
-	dff c_valid_f_2 (.q(c_valid_2), .d(c_valid_2), .clk(clk), .rst(rst));
-	*/
 	
 	assign f_stall = (m_stall&~fs_cachehit) | ((write | read) & ~fs_done);
 		
@@ -117,7 +97,7 @@ module cache_fsm(
 	
 	// c_sel is 1, choose way 2
 	assign c_err = c_sel ? c_err_2 : c_err_1;
-	assign c_sel = (idle_next) ? (~c_valid_1 ? 1'b0 : 
+	assign c_sel = (idle) ? (~c_valid_1 ? 1'b0 : 
 			(c_valid_2 ? curr_rand : 1'b1) ) :
 				// TODO: only for optimization
 				// both are valid, cannot be both hit
