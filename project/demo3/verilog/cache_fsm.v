@@ -38,20 +38,20 @@ module cache_fsm(
 	wire [3:0] state_int, next_state_int;
 
 	//Intermediate
-	wire [15:0] data_int, data_prev, curr_m_data_out, curr_data_in, curr_addr, curr_c_data_out, curr_c_data_out_1, curr_c_data_out_2;
-	wire [4:0] curr_c_tag_out, curr_c_tag_out_1, curr_c_tag_out_2;
-	wire [3:0] curr_m_busy;
-	wire curr_write, curr_read;
-	wire curr_c_valid_1, curr_c_dirty_1, curr_c_hit_1;
-	wire curr_c_valid_2, curr_c_dirty_2, curr_c_hit_2;
+	wire [15:0] data_int, data_prev, m_data_out, data_in, addr, c_data_out, c_data_out_1, c_data_out_2;
+	wire [4:0] c_tag_out, c_tag_out_1, c_tag_out_2;
+	wire [3:0] m_busy;
+	wire write, read;
+	wire c_valid_1, c_dirty_1, c_hit_1;
+	wire c_valid_2, c_dirty_2, c_hit_2;
 	wire idle;
-	wire curr_read_int, curr_write_int;
+	wire read_int, write_int;
 
 	assign idle = (next_state_int == 4'b0001) | (next_state_int == 4'b0010);
 	assign idle_next = (state_int == 4'b0001) | (state_int == 4'b0010);
 
-	assign curr_read_int = (curr_read&~read) ? 1'b0 : curr_read;
-	assign curr_write_int = (curr_write&~write) ? 1'b0 : curr_write;
+	//assign read_int = (read&~read) ? 1'b0 : read;
+	//assign write_int = (write&~write) ? 1'b0 : write;
 
 	/*
 	* _______STATE_KEY______
@@ -82,42 +82,43 @@ module cache_fsm(
 	
 	// Holds state for state machine
 	dff state_ff [3:0] (.q(state_int), .d(next_state_int), .clk(clk), .rst(rst));
-	dff write_ff (.q(curr_write), .d(write), .clk(clk), .rst(rst));	
-	dff read_ff (.q(curr_read), .d(read), .clk(clk), .rst(rst));
-	dff addr_f [15:0] (.q(curr_addr), .d(addr), .clk(clk), .rst(rst));
-	dff data_in_f [15:0] (.q(curr_data_in), .d(data_in), .clk(clk), .rst(rst));
-	dff m_data_out_f [15:0] (.q(curr_m_data_out), .d(m_data_out), .clk(clk), .rst(rst));
-	dff m_busy_f [3:0] (.q(curr_m_busy), .d(m_busy), .clk(clk), .rst(rst));
+	/*dff write_ff (.q(write), .d(write), .clk(clk), .rst(rst));	
+	dff read_ff (.q(read), .d(read), .clk(clk), .rst(rst));
+	dff addr_f [15:0] (.q(addr), .d(addr), .clk(clk), .rst(rst));
+	dff data_in_f [15:0] (.q(data_in), .d(data_in), .clk(clk), .rst(rst));
+	dff m_data_out_f [15:0] (.q(m_data_out), .d(m_data_out), .clk(clk), .rst(rst));
+	dff m_busy_f [3:0] (.q(m_busy), .d(m_busy), .clk(clk), .rst(rst));
 	
-	dff c_data_out_f_1 [15:0] (.q(curr_c_data_out_1), .d(c_data_out_1), .clk(clk), .rst(rst));
-	dff c_tag_out_f_1 [4:0] (.q(curr_c_tag_out_1), .d(c_tag_out_1), .clk(clk), .rst(rst));
-	dff c_hit_f_1 (.q(curr_c_hit_1), .d(c_hit_1), .clk(clk), .rst(rst));
-	dff c_dirty_f_1 (.q(curr_c_dirty_1), .d(c_dirty_1), .clk(clk), .rst(rst));
-	dff c_valid_f_1 (.q(curr_c_valid_1), .d(c_valid_1), .clk(clk), .rst(rst));
+	dff c_data_out_f_1 [15:0] (.q(c_data_out_1), .d(c_data_out_1), .clk(clk), .rst(rst));
+	dff c_tag_out_f_1 [4:0] (.q(c_tag_out_1), .d(c_tag_out_1), .clk(clk), .rst(rst));
+	dff c_hit_f_1 (.q(c_hit_1), .d(c_hit_1), .clk(clk), .rst(rst));
+	dff c_dirty_f_1 (.q(c_dirty_1), .d(c_dirty_1), .clk(clk), .rst(rst));
+	dff c_valid_f_1 (.q(c_valid_1), .d(c_valid_1), .clk(clk), .rst(rst));
 	
-	dff c_data_out_f_2 [15:0] (.q(curr_c_data_out_2), .d(c_data_out_2), .clk(clk), .rst(rst));
-	dff c_tag_out_f_2 [4:0] (.q(curr_c_tag_out_2), .d(c_tag_out_2), .clk(clk), .rst(rst));
-	dff c_hit_f_2 (.q(curr_c_hit_2), .d(c_hit_2), .clk(clk), .rst(rst));
-	dff c_dirty_f_2 (.q(curr_c_dirty_2), .d(c_dirty_2), .clk(clk), .rst(rst));
-	dff c_valid_f_2 (.q(curr_c_valid_2), .d(c_valid_2), .clk(clk), .rst(rst));
+	dff c_data_out_f_2 [15:0] (.q(c_data_out_2), .d(c_data_out_2), .clk(clk), .rst(rst));
+	dff c_tag_out_f_2 [4:0] (.q(c_tag_out_2), .d(c_tag_out_2), .clk(clk), .rst(rst));
+	dff c_hit_f_2 (.q(c_hit_2), .d(c_hit_2), .clk(clk), .rst(rst));
+	dff c_dirty_f_2 (.q(c_dirty_2), .d(c_dirty_2), .clk(clk), .rst(rst));
+	dff c_valid_f_2 (.q(c_valid_2), .d(c_valid_2), .clk(clk), .rst(rst));
+	*/
 	
 	assign f_stall = (m_stall&~fs_cachehit) | ((write | read) & ~fs_done);
 		
-	wire curr_rand, rand, c_sel, c_hit;
+	wire curr_rand, rand, curr_c_sel, c_hit;
 	wire fc_enable, fc_comp, fc_write, fc_valid_in;
 	wire [2:0] fc_offset;
 	wire [4:0] fc_tag_in;
 	wire [7:0] fc_index;
 	wire [15:0] fc_data_in;
-	wire curr_c_sel;
+	wire c_sel;
 
 	dff victimway (.q(curr_rand), .d(rand), .clk(clk), .rst(rst));
 	assign rand = ((read | write)&idle) ? ~curr_rand : curr_rand;
 	
 	// c_sel is 1, choose way 2
 	assign c_err = c_sel ? c_err_2 : c_err_1;
-	assign c_sel = (idle_next) ? (~curr_c_valid_1 ? 1'b0 : 
-			(curr_c_valid_2 ? curr_rand : 1'b1) ) :
+	assign c_sel = (idle_next) ? (~c_valid_1 ? 1'b0 : 
+			(c_valid_2 ? curr_rand : 1'b1) ) :
 				// TODO: only for optimization
 				// both are valid, cannot be both hit
 				// both are valid, if one is hit, choose the one is hit
@@ -125,47 +126,47 @@ module cache_fsm(
 				// 							if both dirty, random
 				// 							if one dirty, pick the other
 				// 							if no dirty, whatever
-				// (curr_c_hit ? curr_c_hit_2: curr_rand) : 1'b1) :
+				// (c_hit ? c_hit_2: rand) : 1'b1) :
 				curr_c_sel;
 	dff c_sel_f_2 (.q(curr_c_sel), .d(c_sel), .clk(clk), .rst(rst));
 
 	// Did hit occur?	
 	// // Which cache had hit (1 = way 2)
-	// assign c_hit_way_num = c_hit & curr_c_hit_2;
+	// assign c_hit_way_num = c_hit & c_hit_2;
 	// // If hit : pick correct data out. 
 	
 	// assign c_rep = c_hit ? c_hit_way_num : c_sel;	
-	// assign curr_c_tag_out = c_rep ? curr_c_tag_out_2 : curr_c_tag_out_1;
-	// assign curr_c_data_out = c_rep ? curr_c_data_out_2 : curr_c_data_out_1;
+	// assign c_tag_out = c_rep ? c_tag_out_2 : c_tag_out_1;
+	// assign c_data_out = c_rep ? c_data_out_2 : c_data_out_1;
 					
-	// assign curr_c_valid  = c_rep ? curr_c_valid_2 : curr_c_valid_1;
-	// assign curr_c_dirty = c_sel ? curr_c_dirty_2 : curr_c_dirty_1;
+	// assign c_valid  = c_rep ? c_valid_2 : c_valid_1;
+	// assign c_dirty = c_sel ? c_dirty_2 : c_dirty_1;
 	
-	wire curr_c_hit_valid, curr_c_hit_dirty, one_hit, both_hit;
-	wire [15:0] curr_c_return_data_out;
-	assign one_hit = curr_c_hit_1 ^ curr_c_hit_2;
-	assign both_hit = (curr_c_hit_1 & curr_c_hit_2) & (curr_c_valid_2 | curr_c_valid_1);
+	wire c_hit_valid, c_hit_dirty, one_hit, both_hit;
+	wire [15:0] c_return_data_out;
+	assign one_hit = c_hit_1 ^ c_hit_2;
+	assign both_hit = (c_hit_1 & c_hit_2) & (c_valid_2 | c_valid_1);
 	// assume both hit, only one is valid
-	assign hit_num = both_hit ? curr_c_valid_2 :
-						one_hit ? curr_c_hit_2 : 1'b0;
+	assign hit_num = both_hit ? c_valid_2 :
+						one_hit ? c_hit_2 : 1'b0;
 	assign c_hit = one_hit | both_hit;
 	
-	assign curr_c_valid  = c_hit ? curr_c_hit_valid : 
-							c_sel ? curr_c_valid_2 : curr_c_valid_1;
-	assign curr_c_dirty = c_hit ? curr_c_hit_dirty : 
-							c_sel ? curr_c_valid_2 : curr_c_valid_1;
-	assign curr_c_tag_out = c_sel ? curr_c_tag_out_2 : curr_c_tag_out_1;
-	assign curr_c_data_out = c_hit ? curr_c_return_data_out :
-								c_sel ? curr_c_data_out_2 : curr_c_data_out_1;
+	assign c_valid  = c_hit ? c_hit_valid : 
+							c_sel ? c_valid_2 : c_valid_1;
+	assign c_dirty = c_hit ? c_hit_dirty : 
+							c_sel ? c_valid_2 : c_valid_1;
+	assign c_tag_out = c_sel ? c_tag_out_2 : c_tag_out_1;
+	assign c_data_out = c_hit ? c_return_data_out :
+								c_sel ? c_data_out_2 : c_data_out_1;
 	
-	assign curr_c_hit_valid = (hit_num ? curr_c_valid_2 : curr_c_valid_1);
-	assign curr_c_hit_dirty = (hit_num ? curr_c_dirty_2 : curr_c_dirty_1);
-	// assign curr_c_return = curr_c_hit & curr_c_hit_valid;
-	assign curr_c_return_data_out = hit_num ? curr_c_data_out_2 : curr_c_data_out_1;
-	// assign curr_c_data_out = curr_c_return ? curr_c_return_data_out : 
-	// 				curr_c_rep ? curr_c_data_out_2 : curr_c_data_out_1;
-	// assign curr_c_valid = curr_c_hit ? curr_c_hit_valid : 
-	// 					(curr_c_sel ? curr_c_valid_2 : curr_c_valid_1);
+	assign c_hit_valid = (hit_num ? c_valid_2 : c_valid_1);
+	assign c_hit_dirty = (hit_num ? c_dirty_2 : c_dirty_1);
+	// assign c_return = c_hit & c_hit_valid;
+	assign c_return_data_out = hit_num ? c_data_out_2 : c_data_out_1;
+	// assign c_data_out = c_return ? c_return_data_out : 
+	// 				c_rep ? c_data_out_2 : c_data_out_1;
+	// assign c_valid = c_hit ? c_hit_valid : 
+	// 					(c_sel ? c_valid_2 : c_valid_1);
 
 
 	assign fc_data_in_1 = ~c_sel|idle ? fc_data_in: 16'b0;
@@ -186,11 +187,19 @@ module cache_fsm(
 	assign fc_write_2 = c_sel|idle ? fc_write : 1'b0;		
 	assign fc_valid_in_2 = c_sel|idle ? fc_valid_in : 1'b1;	
 
+	//wire [15:0] addr_int, data_in_int, addr_int_int, data_in_int_int;
+
+	//dff b_12 [15:0] (.d(addr), .clk(clk), .rst(rst), .q(addr_int));
+	//dff b_13 [15:0] (.d(data_in), .clk(clk), .rst(rst), .q(data_in_int));
+
+	//assign addr_int_int = (~read&~write) ? (addr) : addr_int;
+	//assign data_in_int_int = (~read&~write) ? (data_in) : data_in_int;
+
 	cache_fsm_wrapper fsm (
 	                // Inputs
-	                .addr(addr),.data_in(curr_data_in),.read(curr_read_int),.write(curr_write_int),.rst(rst),
-	                .c_tag_out(curr_c_tag_out),.c_data_out(curr_c_data_out),.c_hit(c_hit),.c_dirty(curr_c_dirty),.c_valid(curr_c_valid),.c_err(c_err),
-	                .m_data_out(curr_m_data_out),.m_busy(curr_m_busy),.m_err(m_err),.state_int(state_int),.data_prev(data_prev),
+	                .addr(addr),.data_in(data_in),.read(read),.write(write),.rst(rst),
+	                .c_tag_out(c_tag_out),.c_data_out(c_data_out),.c_hit(c_hit),.c_dirty(c_dirty),.c_valid(c_valid),.c_err(c_err),
+	                .m_data_out(m_data_out),.m_busy(m_busy),.m_err(m_err),.state_int(state_int),.data_prev(data_prev),
 
 	                // Outputs
 	                .fc_enable(fc_enable),.fc_tag_in(fc_tag_in),.fc_index(fc_index),.fc_offset(fc_offset),.fc_data_in(fc_data_in),.fc_comp(fc_comp),.fc_write(fc_write),.fc_valid_in(fc_valid_in),
