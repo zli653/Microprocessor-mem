@@ -39,7 +39,7 @@ module execute (
 	reverse rev(.In(ReadDataA), .Out(int_rev));
 
 	assign ALUOut_1 = Btr ? int_rev : int_alu;
-	assign ALUout_2 = PCtoReg ? PCInc : ALUOut_1;
+	assign ALUOut_2 = PCtoReg ? PCInc : ALUOut_1;
 	assign ALUOut = Set ? {15'd0, Cond} : ALUOut_2;
 	assign int_A = fwd_A[1] ? data_exmem : fwd_A[0] ? data_memwb : ReadDataA;
 	assign int_B = fwd_B[1] ? data_exmem : fwd_B[0] ? data_memwb : int_B_int;

@@ -104,6 +104,7 @@ module proc (/*AUTOARG*/
 	// Forwarding
 	wire [1:0] fwd_A_toex, fwd_B_toex, fwd_A_todec, fwd_B_todec;
 	wire [15:0] data_memwb_todec, data_memwb_toex;
+	wire exex_stall_todec, exex_stall_toex;
 	// Instantiate the fetch stage
 	fetch FetchStage(.err(err_fetch), .PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .PCSrc(PCSrc), .Halt(Halt_tof), .Branch_PC(Branch_PC), .Cond(Cond), .PCImm(PCImm), .Jump(Jump), .En(En), .nop(nop), .Dmem_Stall(Dmem_Stall));
 
@@ -119,7 +120,7 @@ module proc (/*AUTOARG*/
 
 
 	 // Hazard detection unit
-        hazard HazardUnit(.rst(rst), .clk(clk),
+/*        hazard HazardUnit(.rst(rst), .clk(clk),
                 //Inputs
                 .DecInstruct(DecInstrOut), .ExInstruct(ExInstr), .ExRegWrite(RegWrite_toex), .ExRegDst(RegDst_toex)
                 , .MemInstruct(MemInstr), .MemRegWrite(RegWrite_tomem), .MemRegDst(RegDst_tomem)
@@ -128,8 +129,9 @@ module proc (/*AUTOARG*/
 
 		//Outputs
                 .En(En)
-                );
-	
+                );*/
+
+	assign En = ~(exex_stall_todec | exex_stall_toex);
 
 	//Instantiate Decode To Execute Pipeline
 	idex decToEx(
@@ -157,7 +159,7 @@ module proc (/*AUTOARG*/
 	// Forwarding Unit
 	fwding_unit fwd_dec(
 		//Outputs
-		.fwd_A(fwd_A_todec), .fwd_B(fwd_B_todec), .data_memwb(data_memwb_todec),
+		.fwd_A(fwd_A_todec), .fwd_B(fwd_B_todec), .data_memwb(data_memwb_todec), .exex_stall(exex_stall_todec),
 		//input
 		// ifid
 		.ALUSrc2(ALUSrc2), .Set(Set), .DMemWrite(DMemWrite), .Lbi(Lbi), .PCImm(PCImm), .instr(DecInstrOut),
@@ -173,7 +175,7 @@ module proc (/*AUTOARG*/
 
 	fwding_unit fwd_ex(
 		//Outputs
-		.fwd_A(fwd_A_toex), .fwd_B(fwd_B_toex), .data_memwb(data_memwb_toex),
+		.fwd_A(fwd_A_toex), .fwd_B(fwd_B_toex), .data_memwb(data_memwb_toex), .exex_stall(exex_stall_toex),
 		//input
 		// idex (Add Lbi_toex, PCImm_toex)
 		.ALUSrc2(ALUSrc2_toex), .Set(Set_toex), .DMemWrite(DMemWrite_toex), .Lbi(Lbi_toex), .PCImm(PCImm_toex), .instr(ExInstr),

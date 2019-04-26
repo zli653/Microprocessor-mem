@@ -26,6 +26,7 @@ module hazard(
 	regwrite ExRegWrite_stallunit(.RegDst(ExRegDst), .instruct(ExInstruct), .decInstruct(DecInstruct), .stall(stallEx),
 	       	.RegWrite(ExRegWrite), .ALUSrc2(ALUSrc2), .DMemWrite(DMemWrite), .PCImm(PCImm), .Lbi(Lbi), .Set(Set));
 
-	assign En = ~( stallMem | stallEx);
+	assign En = 1'b1;
+	//assign En = ~( stallMem | stallEx);
 
 endmodule

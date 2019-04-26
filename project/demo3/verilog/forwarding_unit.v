@@ -1,6 +1,6 @@
 module fwding_unit(
 	//Outputs
-	fwd_A, fwd_B, data_memwb,
+	fwd_A, fwd_B, data_memwb, exex_stall,
 
 	//input
 	// idex
@@ -32,9 +32,11 @@ module fwding_unit(
 	// Outputs
 	output [1:0] fwd_A, fwd_B;
 	output [15:0] data_memwb;
+	output exex_stall;
 	// Wires
 	wire rtUsed, rsUsed, fwd_exex_A, fwd_exex_B, fwd_memex_A, fwd_memex_B;
         wire [2:0] WriteRegSel_exmem, WriteRegSel_memwb;	
+	wire fwd_exex_A_int, fwd_exex_B_int;
 
 	// idex	
 	assign rtUsed = (ALUSrc2 | Set | DMemWrite);
@@ -60,9 +62,12 @@ module fwding_unit(
 		3'b000;
 
 	// Forward exex	
-	assign fwd_exex_A = rsUsed & RegWrite_exmem & ~DMemEn_exmem & (WriteRegSel_exmem == instr[10:8]);
-	assign fwd_exex_B = rtUsed & RegWrite_exmem & ~DMemEn_exmem & (WriteRegSel_exmem == instr[7:5]);
-	
+	assign fwd_exex_A_int = rsUsed & RegWrite_exmem & (WriteRegSel_exmem == instr[10:8]);
+	assign fwd_exex_B_int = rtUsed & RegWrite_exmem & (WriteRegSel_exmem == instr[7:5]);
+	assign fwd_exex_A = fwd_exex_A_int & ~DMemEn_exmem;
+	assign fwd_exex_B = fwd_exex_B_int & ~DMemEn_exmem;
+	assign exex_stall = (fwd_exex_A_int | fwd_exex_B_int) & DMemEn_exmem;
+
 	// Forward memex	
 	assign fwd_memex_A = rsUsed & RegWrite_memwb & (WriteRegSel_memwb == instr[10:8]) ;
 	assign fwd_memex_B = rtUsed & RegWrite_memwb & (WriteRegSel_memwb == instr[7:5]);
