@@ -79,5 +79,5 @@ module idex (
 	dff_wrapper df25(.q(PCImm_toex), .d(PCImm), .en(en), .clk(clk), .rst(rst));
 	dff_wrapper df26(.q(Lbi_toex), .d(Lbi), .en(en), .clk(clk), .rst(rst));
 
-	assign instructout = (rst | ~en) ? 16'b0000100000000000 : instructInt;
+	assign instructout = (rst) ? 16'b0000100000000000 : instructInt;
 endmodule

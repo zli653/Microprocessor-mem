@@ -37,9 +37,12 @@ module fwding_unit(
 	wire rtUsed, rsUsed, fwd_exex_A, fwd_exex_B, fwd_memex_A, fwd_memex_B;
         wire [2:0] WriteRegSel_exmem, WriteRegSel_memwb;	
 	wire fwd_exex_A_int, fwd_exex_B_int;
+	wire nop;
+
+	assign nop = (instr == 16'b0000100000000000);
 
 	// idex	
-	assign rtUsed = (ALUSrc2 | Set | DMemWrite);
+	assign rtUsed = (ALUSrc2 | Set);
 	assign rsUsed = ~(Lbi | PCImm | (instr[15:12] == 4'b0000));
 
 	
@@ -69,7 +72,7 @@ module fwding_unit(
 	assign exex_stall = (fwd_exex_A_int | fwd_exex_B_int) & DMemEn_exmem;
 
 	// Forward memex	
-	assign fwd_memex_A = rsUsed & RegWrite_memwb & (WriteRegSel_memwb == instr[10:8]) ;
+	assign fwd_memex_A = rsUsed & RegWrite_memwb & (WriteRegSel_memwb == instr[10:8]);
 	assign fwd_memex_B = rtUsed & RegWrite_memwb & (WriteRegSel_memwb == instr[7:5]);
 	
 	assign fwd_A = {fwd_exex_A, fwd_memex_A};

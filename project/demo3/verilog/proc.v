@@ -97,7 +97,7 @@ module proc (/*AUTOARG*/
 
 	wire RegWrite_todec, Halt_tof;
 	wire [1:0] RegDst_todec;
-	wire [15:0] WbInstr;
+	wire [15:0] WbInstr, ReadData2_ex;
 	wire En;
 	wire Lbi, Lbi_toex, PCImm_toex, nop;
 
@@ -136,14 +136,14 @@ module proc (/*AUTOARG*/
 	//Instantiate Decode To Execute Pipeline
 	idex decToEx(
 		.InvA_toex(InvA_toex), .InvB_toex(InvB_toex), .Sign_toex(Sign_toex), .Cin_toex(Cin_toex), .Op_toex(Op_toex), .PCInc_toex(PCInc_toex),
-		.ALUSrc2_toex(ALUSrc2_toex), .Btr_toex(Btr_toex), .ReadData2_toex(ReadData2_toex), .EffReadData1_toex(EffReadData1_toex),
+		.ALUSrc2_toex(ALUSrc2_toex), .Btr_toex(Btr_toex), .ReadData2_toex(ReadData2_ex), .EffReadData1_toex(EffReadData1_toex),
 		.Imm_toex(Imm_toex), .DMemWrite_toex(DMemWrite_toex), .DMemEn_toex(DMemEn_toex), .DMemDump_toex(DMemDump_toex), .PCtoReg_toex(PCtoReg_toex),
 		.MemtoReg_toex(MemtoReg_toex), .Cond_toex(Cond_toex), .Set_toex(Set_toex), .instructout(ExInstr), .RegWrite_toex(RegWrite_toex), .RegDst_toex(RegDst_toex), .Halt_toex(Halt_toex),
 		//Inputs
 		.InvA(InvA), .InvB(InvB), .Sign(Sign), .Cin(Cin), .Op(Op), .Halt(Halt), .PCInc(PCIncOut), .PCImm(PCImm), .Lbi(Lbi),
 		.ALUSrc2(ALUSrc2), .Btr(Btr), .ReadData2(ReadData2), .EffReadData1(EffReadData1),
 		.Imm(Imm), .DMemWrite(DMemWrite), .DMemEn(DMemEn), .DMemDump(DMemDump), .PCtoReg(PCtoReg),
-		.MemtoReg(MemtoReg), .Cond(Cond), .Set(Set), .clk(clk), .En(En), .en(~Dmem_Stall), .rst(rst), .instructin(DecInstrOut), .RegWrite(DecRegWriteout), .RegDst(DecRegDstout),
+		.MemtoReg(MemtoReg), .Cond(Cond), .Set(Set), .clk(clk), .En(1'b1), .en(~Dmem_Stall&~exex_stall_toex), .rst(rst), .instructin(DecInstrOut), .RegWrite(DecRegWriteout), .RegDst(DecRegDstout),
 		.PCImm_toex(PCImm_toex), .Lbi_toex(Lbi_toex)
 		
 	);
@@ -151,9 +151,9 @@ module proc (/*AUTOARG*/
 
 	// Instantiate the execute stage (Add fwd_A and fwd_B)
 	execute ExecuteStage(.err(err_execute), .ALUOut(ALUOut), .Zero(Zero), .Ofl(Ofl), .clk(clk), .rst(rst), .invA(InvA_toex), .invB(InvB_toex), .Sign(Sign_toex), .Cin(Cin_toex), .Btr(Btr_toex), 
-		.OpCode(Op_toex), .ALUSrc2(ALUSrc2_toex), .ReadDataA(EffReadData1_toex), .ReadDataB(ReadData2_toex), .Imm(Imm_toex),
+		.OpCode(Op_toex), .ALUSrc2(ALUSrc2_toex), .ReadDataA(EffReadData1_toex), .ReadDataB(ReadData2_ex), .Imm(Imm_toex),
 	       .PCtoReg(PCtoReg_toex), .Cond(Cond_toex), .Set(Set_toex), .PCInc(PCInc_toex),
-		.fwd_A(fwd_A_toex), .fwd_B(fwd_B_toex), .data_exmem(ALUOut_tomem), .data_memwb(data_memwb_toex));
+		.fwd_A(fwd_A_toex), .fwd_B(fwd_B_toex), .data_exmem(ALUOut_tomem), .data_memwb(data_memwb_toex), .ReadData2(ReadData2_toex));
 
 
 	// Forwarding Unit
@@ -198,7 +198,7 @@ module proc (/*AUTOARG*/
 		.DMemDump_tomem(DMemDump_tomem), .PCtoReg_tomem(PCtoReg_tomem), .MemtoReg_tomem(MemtoReg_tomem), .Cond_tomem(Cond_tomem), .Set_tomem(Set_tomem), .instructout(MemInstr), .RegWrite_tomem(RegWrite_tomem), .RegDst_tomem(RegDst_tomem), .Halt_tomem(Halt_tomem),
 		//Inputs
 		.PCInc(PCInc_toex), .ALUOut(ALUOut), .ReadData2(ReadData2_toex), .DMemWrite(DMemWrite_toex), .DMemEn(DMemEn_toex), .Halt(Halt_toex),
-		.DMemDump(DMemDump_toex), .PCtoReg(PCtoReg_toex), .MemtoReg(MemtoReg_toex), .Cond(Cond_toex), .Set(Set_toex), .clk(clk), .en(~Dmem_Stall), .rst(rst), .instructin(ExInstr), .RegWrite(RegWrite_toex), .RegDst(RegDst_toex)
+		.DMemDump(DMemDump_toex), .PCtoReg(PCtoReg_toex), .MemtoReg(MemtoReg_toex), .Cond(Cond_toex), .Set(Set_toex), .clk(clk), .en(~Dmem_Stall), .rst(rst), .instructin(ExInstr), .RegWrite(RegWrite_toex), .RegDst(RegDst_toex), .stall(exex_stall_toex)
 		);
 
 	// Instantiate the memory stage
