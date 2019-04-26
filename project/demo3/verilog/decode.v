@@ -1,6 +1,7 @@
 module decode(
 	//Inputs
 	rst, clk, instruct, wb, RegWrite_todec, RegDst_todec, WriteInstruct, PCInc,
+	fwd_A, fwd_B, data_memwb, data_exmem,	
 	//Outputs
 	EffReadData1, ReadData2, Imm, err, DMemWrite, DMemEn, ALUSrc2, PCSrc, MemtoReg, DMemDump, Jump, PCImm, PCtoReg, InvA, InvB, Sign, Cin, Op, Set, Halt, Cond, Btr, RegDstout, RegWriteout, Lbi, Branch_PC
 	);
@@ -13,7 +14,9 @@ module decode(
 	input [15:0] wb;
 	input [15:0] WriteInstruct;
 	input [15:0] PCInc;
-
+	input [15:0] data_memwb, data_exmem;
+	input [1:0] fwd_A, fwd_B;
+	
 	output [15:0] ReadData2;
 	output [15:0] EffReadData1;
 	output [15:0] Imm;
@@ -62,7 +65,10 @@ module decode(
 		.BrSel(BrSel), .Set(Set), .Halt(Halt), .Lbi(Lbi), .OpCode(instruct[15:11]), .Funct(instruct[1:0]));
 	
 	// Condition logic
-	cmper condition(.A(ReadData1), .B(ReadData2), .c_bsel(BrSel), .cond(Cond));	
+	wire [15:0] int_A, int_B;
+	assign int_A = fwd_A[1] ? data_exmem : fwd_A[0] ? data_memwb : ReadData1;
+	assign int_B = fwd_B[1] ? data_exmem : fwd_B[0] ? data_memwb : ReadData2;
+	cmper condition(.A(int_A), .B(int_B), .c_bsel(BrSel), .cond(Cond));	
 
 	// Output is PCImm, uses SESel internally
 	immext ext(.instruct(instruct), .SESel(SESel), .err(err_1), .Imm(Imm));

@@ -725,7 +725,7 @@ module control (/*AUTOARG*/
 				PCImm = 1'b0;
 
 				//added after hw6 
-				PCtoReg = 1'bX;
+				PCtoReg = 1'b0;
 				invA = 1'b0;
 				invB = 1'b0;
 				Sign = 1'b1;
