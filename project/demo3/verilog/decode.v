@@ -3,7 +3,7 @@ module decode(
 	rst, clk, instruct, wb, RegWrite_todec, RegDst_todec, WriteInstruct, PCInc,
 	fwd_A, fwd_B, data_memwb, data_exmem,	
 	//Outputs
-	EffReadData1, ReadData2, Imm, err, DMemWrite, DMemEn, ALUSrc2, PCSrc, MemtoReg, DMemDump, Jump, PCImm, PCtoReg, InvA, InvB, Sign, Cin, Op, Set, Halt, Cond, Btr, RegDstout, RegWriteout, Lbi, Branch_PC
+	EffReadData1, ReadData2, Imm, err, DMemWrite, DMemEn, ALUSrc2, PCSrc, MemtoReg, DMemDump, Jump, PCImm, PCtoReg, InvA, InvB, Sign, Cin, Op, Set, Halt, Cond, Btr, RegDstout, RegWriteout, Lbi, Branch_PC, Slbi
 	);
 
 	input rst;
@@ -53,7 +53,7 @@ module decode(
 	wire [1:0] RegDst;
 	wire [15:0] ReadData1;
 	wire [15:0] int_shifted,int_lbi;
-	wire Slbi;
+	output Slbi;
 	wire [2:0] WriteRegSel;
 
 	assign RegDstout = RegDst; 
@@ -93,9 +93,10 @@ module decode(
 		.writeData(wb), .writeEn(RegWrite_todec));
 	
 	// Determine effective ReadData1 (Shift left 8 bits and fill with 0)
-	left_shift shifter(.In(ReadData1), .Cnt(4'd8), .Fill(1'b0), .Out(int_shifted));	
-	assign int_lbi = Lbi ? 16'd0 : ReadData1;
-	assign EffReadData1 = (Slbi == 1'b1) ? int_shifted : int_lbi;
+//	left_shift shifter(.In(ReadData1), .Cnt(4'd8), .Fill(1'b0), .Out(int_shifted));	
+//	assign int_lbi = Lbi ? 16'd0 : ReadData1;
+//	assign EffReadData1 = (Slbi == 1'b1) ? int_shifted : int_lbi;
+	assign EffReadData1 = ReadData1;
 
 	// Assign error if needed (Assume any undefined input is an error)
 	assign err = (err_0 | err_1 | err_2);

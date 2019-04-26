@@ -116,7 +116,7 @@ module proc (/*AUTOARG*/
 	       .ALUSrc2(ALUSrc2), .PCSrc(PCSrc), .MemtoReg(MemtoReg), .DMemDump(DMemDump), .Jump(Jump), .PCImm(PCImm), .PCtoReg(PCtoReg), .InvA(InvA), .InvB(InvB), .Sign(Sign), .Cin(Cin), .Op(Op), .PCInc(PCIncOut),
 		.fwd_A(fwd_A_todec), .fwd_B(fwd_B_todec), .data_exmem(ALUOut_tomem), .data_memwb(data_memwb_todec),
 	       .Set(Set), .Halt(Halt), .Cond(Cond), .RegDstout(DecRegDstout), .RegWriteout(DecRegWriteout), .RegWrite_todec(RegWrite_todec)
-       		, .RegDst_todec(RegDst_todec), .Lbi(Lbi), .WriteInstruct(WbInstr), .Branch_PC(Branch_PC));
+       		, .RegDst_todec(RegDst_todec), .Lbi(Lbi), .WriteInstruct(WbInstr), .Branch_PC(Branch_PC), .Slbi(Slbi));
 
 
 	 // Hazard detection unit
@@ -139,12 +139,13 @@ module proc (/*AUTOARG*/
 		.ALUSrc2_toex(ALUSrc2_toex), .Btr_toex(Btr_toex), .ReadData2_toex(ReadData2_ex), .EffReadData1_toex(EffReadData1_toex),
 		.Imm_toex(Imm_toex), .DMemWrite_toex(DMemWrite_toex), .DMemEn_toex(DMemEn_toex), .DMemDump_toex(DMemDump_toex), .PCtoReg_toex(PCtoReg_toex),
 		.MemtoReg_toex(MemtoReg_toex), .Cond_toex(Cond_toex), .Set_toex(Set_toex), .instructout(ExInstr), .RegWrite_toex(RegWrite_toex), .RegDst_toex(RegDst_toex), .Halt_toex(Halt_toex),
+		.Slbi_toex(Slbi_toex), .Lbi_toex(Lbi_toex),
 		//Inputs
 		.InvA(InvA), .InvB(InvB), .Sign(Sign), .Cin(Cin), .Op(Op), .Halt(Halt), .PCInc(PCIncOut), .PCImm(PCImm), .Lbi(Lbi),
 		.ALUSrc2(ALUSrc2), .Btr(Btr), .ReadData2(ReadData2), .EffReadData1(EffReadData1),
 		.Imm(Imm), .DMemWrite(DMemWrite), .DMemEn(DMemEn), .DMemDump(DMemDump), .PCtoReg(PCtoReg),
 		.MemtoReg(MemtoReg), .Cond(Cond), .Set(Set), .clk(clk), .En(1'b1), .en(~Dmem_Stall&~exex_stall_toex), .rst(rst), .instructin(DecInstrOut), .RegWrite(DecRegWriteout), .RegDst(DecRegDstout),
-		.PCImm_toex(PCImm_toex), .Lbi_toex(Lbi_toex)
+		.PCImm_toex(PCImm_toex), .Slbi(Slbi)
 		
 	);
 
@@ -153,7 +154,8 @@ module proc (/*AUTOARG*/
 	execute ExecuteStage(.err(err_execute), .ALUOut(ALUOut), .Zero(Zero), .Ofl(Ofl), .clk(clk), .rst(rst), .invA(InvA_toex), .invB(InvB_toex), .Sign(Sign_toex), .Cin(Cin_toex), .Btr(Btr_toex), 
 		.OpCode(Op_toex), .ALUSrc2(ALUSrc2_toex), .ReadDataA(EffReadData1_toex), .ReadDataB(ReadData2_ex), .Imm(Imm_toex),
 	       .PCtoReg(PCtoReg_toex), .Cond(Cond_toex), .Set(Set_toex), .PCInc(PCInc_toex),
-		.fwd_A(fwd_A_toex), .fwd_B(fwd_B_toex), .data_exmem(ALUOut_tomem), .data_memwb(data_memwb_toex), .ReadData2(ReadData2_toex));
+		.fwd_A(fwd_A_toex), .fwd_B(fwd_B_toex), .data_exmem(ALUOut_tomem), .data_memwb(data_memwb_toex), .ReadData2(ReadData2_toex), 
+		.Lbi(Lbi_toex), .Slbi(Slbi_toex));
 
 
 	// Forwarding Unit
