@@ -135,8 +135,8 @@ module cache_fsm_wrapper(
 				next_state = (m_busy[0]) ? 4'b1000 : 4'b1001;
 				fm_wr = 1'b0;
 				fm_rd = 1'b1;
-				fm_rd = ((c_valid == 1'b0) | ({c_hit, c_valid, c_dirty} == 3'b010));
-				fm_addr = ((c_valid == 1'b0) | ({c_hit, c_valid, c_dirty} == 3'b010)) ? {addr[15:3], 3'b000}  : 16'd0;
+				//fm_rd = ((c_valid == 1'b0) | ({c_hit, c_valid, c_dirty} == 3'b010));
+				//fm_addr = ((c_valid == 1'b0) | ({c_hit, c_valid, c_dirty} == 3'b010)) ? {addr[15:3], 3'b000}  : 16'd0;
 				
 				fm_addr = {addr[15:3], 3'b000};
 			end
