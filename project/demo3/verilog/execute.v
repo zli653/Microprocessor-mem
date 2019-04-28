@@ -3,7 +3,7 @@ module execute (
 	err, ALUOut, Zero, Ofl, Btr, ReadData2,
 	//Inputs
 	clk, rst, invA, invB, Sign, Cin, OpCode, ALUSrc2, ReadDataA, ReadDataB, Imm, fwd_A, fwd_B, data_exmem, data_memwb,
-	PCtoReg, Cond, Set, PCInc, Lbi, Slbi, BrSel	
+	PCtoReg, Cond, Set, PCInc, Lbi, Slbi, BrSel, St	
 	);
 
 	input clk;
@@ -23,6 +23,7 @@ module execute (
 	input [15:0] PCInc;
 	input Lbi, Slbi;
 	input [2:0] BrSel;
+	input St;
 
 	output err;
 	output [15:0] ALUOut;
@@ -58,8 +59,9 @@ module execute (
 	assign ALUOut_2 = PCtoReg ? PCInc : ALUOut_1;
 	assign ALUOut = Set ? {15'd0, Eff_Cond} : ALUOut_2;
 	assign int_A = fwd_A[1] ? data_exmem : fwd_A[0] ? data_memwb : ReadDataA;
-	assign int_B = fwd_B[1] ? data_exmem : fwd_B[0] ? data_memwb : int_B_int;
-	assign ReadData2 = int_B;
+	assign int_B = (~St & fwd_B[1]) ? data_exmem : (~St & fwd_B[0]) ? data_memwb : int_B_int;
+	assign ReadData2 = int_B_cmp;
+	// assign ReadData2 = int_B;
 
 assign err = 0;
 endmodule

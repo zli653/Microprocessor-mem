@@ -154,11 +154,12 @@ module proc (/*AUTOARG*/
 
 
 	// Instantiate the execute stage (Add fwd_A and fwd_B)
+	assign St = (ExInstr[15:11]==5'b10000) | (ExInstr[15:11]==5'b10011);
 	execute ExecuteStage(.err(err_execute), .ALUOut(ALUOut), .Zero(Zero), .Ofl(Ofl), .clk(clk), .rst(rst), .invA(InvA_toex), .invB(InvB_toex), .Sign(Sign_toex), .Cin(Cin_toex), .Btr(Btr_toex), 
 		.OpCode(Op_toex), .ALUSrc2(ALUSrc2_toex), .ReadDataA(EffReadData1_toex), .ReadDataB(ReadData2_ex), .Imm(Imm_toex),
 	       .PCtoReg(PCtoReg_toex), .Cond(Cond_toex), .Set(Set_toex), .PCInc(PCInc_toex),
 		.fwd_A(fwd_A_toex), .fwd_B(fwd_B_toex), .data_exmem(ALUOut_tomem), .data_memwb(data_memwb_toex), .ReadData2(ReadData2_toex), 
-		.Lbi(Lbi_toex), .Slbi(Slbi_toex), .BrSel(BrSel_toex));
+		.Lbi(Lbi_toex), .Slbi(Slbi_toex), .BrSel(BrSel_toex), .St(St));
 
 
 	// Forwarding Unit

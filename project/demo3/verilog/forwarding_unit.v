@@ -42,7 +42,7 @@ module fwding_unit(
 	assign nop = (instr == 16'b0000100000000000);
 
 	// idex	
-	assign rtUsed = (ALUSrc2 | Set);
+	assign rtUsed = (ALUSrc2 | Set | instr[15:11] == 5'b10000 | instr[15:11] == 5'b10011);
 	assign rsUsed = ~(Lbi | PCImm | (instr[15:12] == 4'b0000));
 
 	
