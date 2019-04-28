@@ -825,7 +825,7 @@ module control (/*AUTOARG*/
 				DMemEn = 1'b0;
 				ALUSrc2 = 1'b0;
 				PCSrc = 1'b0; //changed to Zero, PCsrc is only branch
-				MemtoReg = 1'b1; //Changed to 1 from hw to match drawing
+				MemtoReg = 1'b0; //Changed to 1 from hw to match drawing
 				DMemDump = 1'b0;
 				Jump = 1'b0;
 				PCImm = 1'b1;
@@ -852,7 +852,7 @@ module control (/*AUTOARG*/
 				DMemEn = 1'b0;
 				ALUSrc2 = 1'b0;
 				PCSrc = 1'b0; //changed to Zero, PCsrc is only branch
-				MemtoReg = 1'b1; //Changed to 1 from hw to match drawing
+				MemtoReg = 1'b0; //Changed to 1 from hw to match drawing
 				DMemDump = 1'b0;
 				Jump = 1'b1;
 				PCImm = 1'b0;

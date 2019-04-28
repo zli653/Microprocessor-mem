@@ -4,6 +4,7 @@ module decode(
 	fwd_A, fwd_B, data_memwb, data_exmem,	
 	//Outputs
 	EffReadData1, ReadData2, Imm, err, DMemWrite, DMemEn, ALUSrc2, PCSrc, MemtoReg, DMemDump, Jump, PCImm, PCtoReg, InvA, InvB, Sign, Cin, Op, Set, Halt, Cond, Btr, RegDstout, RegWriteout, Lbi, Branch_PC, Slbi
+	, BrSel
 	);
 
 	input rst;
@@ -43,17 +44,18 @@ module decode(
 	output Btr;
 	output Lbi;
 	output [15:0] Branch_PC;
+	output Slbi;
+	output [2:0] BrSel;
 
 	wire err_0,err_1,err_2;
 	wire [15:0] int_jump;
 	wire dc;
 	wire RegWrite;
-	wire [2:0] BrSel;
+	// wire [2:0] BrSel;
 	wire [2:0] SESel;
 	wire [1:0] RegDst;
 	wire [15:0] ReadData1;
 	wire [15:0] int_shifted,int_lbi;
-	output Slbi;
 	wire [2:0] WriteRegSel;
 
 	assign RegDstout = RegDst; 
@@ -68,7 +70,10 @@ module decode(
 	wire [15:0] int_A, int_B;
 	assign int_A = fwd_A[1] ? data_exmem : fwd_A[0] ? data_memwb : ReadData1;
 	assign int_B = fwd_B[1] ? data_exmem : fwd_B[0] ? data_memwb : ReadData2;
-	cmper condition(.A(int_A), .B(int_B), .c_bsel(BrSel), .cond(Cond));	
+	cmper condition(.A(int_A), .B(int_B), .c_bsel(BrSel), .cond(Cond));
+	// wire curr_Cond;	
+	// cmper condition(.A(ReadData1), .B(ReadData2), .c_bsel(BrSel), .cond(curr_Cond));	
+	// assign Cond = (fwd_A[1] | fwd_B[1]) ? data_exmem : curr_Cond;
 
 	// Output is PCImm, uses SESel internally
 	immext ext(.instruct(instruct), .SESel(SESel), .err(err_1), .Imm(Imm));
@@ -96,7 +101,7 @@ module decode(
 //	left_shift shifter(.In(ReadData1), .Cnt(4'd8), .Fill(1'b0), .Out(int_shifted));	
 //	assign int_lbi = Lbi ? 16'd0 : ReadData1;
 //	assign EffReadData1 = (Slbi == 1'b1) ? int_shifted : int_lbi;
-	assign EffReadData1 = ReadData1;
+	assign EffReadData1 = int_A;
 
 	// Assign error if needed (Assume any undefined input is an error)
 	assign err = (err_0 | err_1 | err_2);

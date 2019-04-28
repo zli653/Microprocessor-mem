@@ -4,13 +4,14 @@ module idex (
 	ALUSrc2_toex, Btr_toex, ReadData2_toex, EffReadData1_toex,
 	Imm_toex, DMemWrite_toex, DMemEn_toex, DMemDump_toex, PCtoReg_toex,
 	MemtoReg_toex, Cond_toex, Set_toex, instructout, RegWrite_toex,RegDst_toex, Halt_toex, PCImm_toex, Lbi_toex, Slbi_toex,
+	BrSel_toex,
 	//Inputs
 	//
 
 	InvA, InvB, Sign, Cin, Op, Halt, PCInc, en,
         ALUSrc2, Btr, ReadData2, EffReadData1,
         Imm, DMemWrite, DMemEn, DMemDump, PCtoReg,
-        MemtoReg, Cond, Set, clk, En, rst, instructin, RegDst, RegWrite, PCImm, Lbi, Slbi
+        MemtoReg, Cond, Set, clk, En, rst, instructin, RegDst, RegWrite, PCImm, Lbi, Slbi, BrSel
 	);
 
 	output [15:0] ReadData2_toex, EffReadData1_toex, Imm_toex, instructout, PCInc_toex;
@@ -20,6 +21,7 @@ module idex (
         ALUSrc2_toex, Btr_toex, DMemWrite_toex, DMemEn_toex,
        	DMemDump_toex, PCtoReg_toex, MemtoReg_toex, Cond_toex, Set_toex,
 	RegWrite_toex, Halt_toex, PCImm_toex, Lbi_toex, Slbi_toex;
+	output [2:0] BrSel_toex; 
 
 	input [15:0] ReadData2, EffReadData1, Imm, instructin, PCInc;
 	input [2:0] Op;
@@ -28,6 +30,7 @@ module idex (
         DMemWrite, DMemEn, DMemDump, PCtoReg,
         MemtoReg, Cond, Set, clk, En, rst,
 	RegWrite, Halt, en, Lbi, PCImm, Slbi;
+	input [2:0] BrSel;
 
 	wire [15:0] instructInt;
 	wire RegWrite_toex_int;
@@ -80,6 +83,9 @@ module idex (
 	dff_wrapper df26(.q(Lbi_toex), .d(Lbi), .en(en), .clk(clk), .rst(rst));
 	dff_wrapper df27(.q(Slbi_toex), .d(Slbi), .en(en), .clk(clk), .rst(rst));
 
+	dff_wrapper df28(.q(BrSel_toex[0]), .d(BrSel[0]), .en(en), .clk(clk), .rst(rst));
+	dff_wrapper df29(.q(BrSel_toex[1]), .d(BrSel[1]), .en(en), .clk(clk), .rst(rst));
+	dff_wrapper df30(.q(BrSel_toex[2]), .d(BrSel[2]), .en(en), .clk(clk), .rst(rst));
 
 	assign instructout = (rst) ? 16'b0000100000000000 : instructInt;
 endmodule

@@ -105,8 +105,11 @@ module proc (/*AUTOARG*/
 	wire [1:0] fwd_A_toex, fwd_B_toex, fwd_A_todec, fwd_B_todec;
 	wire [15:0] data_memwb_todec, data_memwb_toex;
 	wire exex_stall_todec, exex_stall_toex;
+
+	wire [2:0] BrSel, BrSel_toex;
 	// Instantiate the fetch stage
-	fetch FetchStage(.err(err_fetch), .PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .PCSrc(PCSrc), .Halt(Halt_tof), .Branch_PC(Branch_PC), .Cond(Cond), .PCImm(PCImm), .Jump(Jump), .En(En), .nop(nop), .Dmem_Stall(Dmem_Stall));
+	fetch FetchStage(.err(err_fetch), .PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .PCSrc(PCSrc), .Halt(Halt_tof), .Branch_PC(Branch_PC), .Cond(Cond), .PCImm(PCImm), .Jump(Jump), .En(En), .nop(nop), .Dmem_Stall(Dmem_Stall)
+			);
 
 	//Instantiate Fetch to Decode Pipeline 
 	ifid fetchToDec(.PCInc(PCInc), .Instr(Instr), .clk(clk), .rst(rst), .en(En&~Dmem_Stall), .PCIncOut(PCIncOut), .DecInstrOut(DecInstrOut), .nop(nop));
@@ -114,9 +117,9 @@ module proc (/*AUTOARG*/
 	// Instantiate the decode stage
 	decode DecodeStage(.rst(rst), .clk(clk), .instruct(DecInstrOut), .wb(wb), .ReadData2(ReadData2), .EffReadData1(EffReadData1), .Imm(Imm), .err(err_decode), .DMemWrite(DMemWrite), .DMemEn(DMemEn), .Btr(Btr),
 	       .ALUSrc2(ALUSrc2), .PCSrc(PCSrc), .MemtoReg(MemtoReg), .DMemDump(DMemDump), .Jump(Jump), .PCImm(PCImm), .PCtoReg(PCtoReg), .InvA(InvA), .InvB(InvB), .Sign(Sign), .Cin(Cin), .Op(Op), .PCInc(PCIncOut),
-		.fwd_A(fwd_A_todec), .fwd_B(fwd_B_todec), .data_exmem(ALUOut_tomem), .data_memwb(data_memwb_todec),
+		.fwd_A(fwd_A_todec), .fwd_B(fwd_B_todec), .data_exmem(ALUOut), .data_memwb(data_memwb_todec),
 	       .Set(Set), .Halt(Halt), .Cond(Cond), .RegDstout(DecRegDstout), .RegWriteout(DecRegWriteout), .RegWrite_todec(RegWrite_todec)
-       		, .RegDst_todec(RegDst_todec), .Lbi(Lbi), .WriteInstruct(WbInstr), .Branch_PC(Branch_PC), .Slbi(Slbi));
+       		, .RegDst_todec(RegDst_todec), .Lbi(Lbi), .WriteInstruct(WbInstr), .Branch_PC(Branch_PC), .Slbi(Slbi),.BrSel(BrSel));
 
 
 	 // Hazard detection unit
@@ -139,13 +142,13 @@ module proc (/*AUTOARG*/
 		.ALUSrc2_toex(ALUSrc2_toex), .Btr_toex(Btr_toex), .ReadData2_toex(ReadData2_ex), .EffReadData1_toex(EffReadData1_toex),
 		.Imm_toex(Imm_toex), .DMemWrite_toex(DMemWrite_toex), .DMemEn_toex(DMemEn_toex), .DMemDump_toex(DMemDump_toex), .PCtoReg_toex(PCtoReg_toex),
 		.MemtoReg_toex(MemtoReg_toex), .Cond_toex(Cond_toex), .Set_toex(Set_toex), .instructout(ExInstr), .RegWrite_toex(RegWrite_toex), .RegDst_toex(RegDst_toex), .Halt_toex(Halt_toex),
-		.Slbi_toex(Slbi_toex), .Lbi_toex(Lbi_toex),
+		.Slbi_toex(Slbi_toex), .Lbi_toex(Lbi_toex), .BrSel_toex(BrSel_toex),
 		//Inputs
 		.InvA(InvA), .InvB(InvB), .Sign(Sign), .Cin(Cin), .Op(Op), .Halt(Halt), .PCInc(PCIncOut), .PCImm(PCImm), .Lbi(Lbi),
 		.ALUSrc2(ALUSrc2), .Btr(Btr), .ReadData2(ReadData2), .EffReadData1(EffReadData1),
 		.Imm(Imm), .DMemWrite(DMemWrite), .DMemEn(DMemEn), .DMemDump(DMemDump), .PCtoReg(PCtoReg),
 		.MemtoReg(MemtoReg), .Cond(Cond), .Set(Set), .clk(clk), .En(1'b1), .en(~Dmem_Stall&~exex_stall_toex), .rst(rst), .instructin(DecInstrOut), .RegWrite(DecRegWriteout), .RegDst(DecRegDstout),
-		.PCImm_toex(PCImm_toex), .Slbi(Slbi)
+		.PCImm_toex(PCImm_toex), .Slbi(Slbi), .BrSel(BrSel)
 		
 	);
 
@@ -155,7 +158,7 @@ module proc (/*AUTOARG*/
 		.OpCode(Op_toex), .ALUSrc2(ALUSrc2_toex), .ReadDataA(EffReadData1_toex), .ReadDataB(ReadData2_ex), .Imm(Imm_toex),
 	       .PCtoReg(PCtoReg_toex), .Cond(Cond_toex), .Set(Set_toex), .PCInc(PCInc_toex),
 		.fwd_A(fwd_A_toex), .fwd_B(fwd_B_toex), .data_exmem(ALUOut_tomem), .data_memwb(data_memwb_toex), .ReadData2(ReadData2_toex), 
-		.Lbi(Lbi_toex), .Slbi(Slbi_toex));
+		.Lbi(Lbi_toex), .Slbi(Slbi_toex), .BrSel(BrSel_toex));
 
 
 	// Forwarding Unit
@@ -167,11 +170,11 @@ module proc (/*AUTOARG*/
 		.ALUSrc2(ALUSrc2), .Set(Set), .DMemWrite(DMemWrite), .Lbi(Lbi), .PCImm(PCImm), .instr(DecInstrOut),
 
 		// exmem
-		.RegDst_exmem(RegDst_tomem), .instr_exmem(MemInstr), .DMemEn_exmem(DMemEn_tomem), .RegWrite_exmem(RegWrite_tomem),
+		.RegDst_exmem(RegDst_toex), .instr_exmem(ExInstr), .DMemEn_exmem(DMemEn_toex), .RegWrite_exmem(RegWrite_toex),
 
 		// memwb
-		.RegDst_memwb(RegDst_todec), .instr_memwb(WbInstr), .RegWrite_memwb(RegWrite_todec),
-		.MemOut_memwb(MemOut_towb), .ALUOut_memwb(ALUOut_towb), .MemtoReg_memwb(MemtoReg_towb)
+		.RegDst_memwb(RegDst_tomem), .instr_memwb(MemInstr), .RegWrite_memwb(RegWrite_tomem),
+		.MemOut_memwb(MemOut), .ALUOut_memwb(ALUOut_tomem), .MemtoReg_memwb(MemtoReg_tomem)
 
         );
 
