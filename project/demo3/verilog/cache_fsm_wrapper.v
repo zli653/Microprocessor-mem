@@ -113,7 +113,7 @@ module cache_fsm_wrapper(
 				f_err = read & write;
 
 				// Output correctly on hits
-				fs_done = ({c_hit, c_valid} == 2'b11);
+				fs_done = ({c_hit, c_valid} == 2'b11) ;
 				fs_cachehit = ({c_hit, c_valid} == 2'b11);
 				fs_data_out = ({c_hit, c_valid} != 2'b11) ? 16'd0 : 
 					read ? c_data_out : data_in; 

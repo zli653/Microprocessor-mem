@@ -134,7 +134,7 @@ module proc (/*AUTOARG*/
                 .En(En)
                 );*/
 
-	assign En = ~(exex_stall_todec | exex_stall_toex);
+	assign En = ~(PCSrc & exex_stall_todec | exex_stall_toex);
 
 	//Instantiate Decode To Execute Pipeline
 	idex decToEx(
@@ -147,7 +147,7 @@ module proc (/*AUTOARG*/
 		.InvA(InvA), .InvB(InvB), .Sign(Sign), .Cin(Cin), .Op(Op), .Halt(Halt), .PCInc(PCIncOut), .PCImm(PCImm), .Lbi(Lbi),
 		.ALUSrc2(ALUSrc2), .Btr(Btr), .ReadData2(ReadData2), .EffReadData1(EffReadData1),
 		.Imm(Imm), .DMemWrite(DMemWrite), .DMemEn(DMemEn), .DMemDump(DMemDump), .PCtoReg(PCtoReg),
-		.MemtoReg(MemtoReg), .Cond(Cond), .Set(Set), .clk(clk), .En(1'b1), .en(~Dmem_Stall&~exex_stall_toex), .rst(rst), .instructin(DecInstrOut), .RegWrite(DecRegWriteout), .RegDst(DecRegDstout),
+		.MemtoReg(MemtoReg), .Cond(Cond), .Set(Set), .clk(clk), .En(1'b1), .en(~Dmem_Stall&En), .rst(rst), .instructin(DecInstrOut), .RegWrite(DecRegWriteout), .RegDst(DecRegDstout),
 		.PCImm_toex(PCImm_toex), .Slbi(Slbi), .BrSel(BrSel)
 		
 	);
@@ -204,7 +204,7 @@ module proc (/*AUTOARG*/
 		.DMemDump_tomem(DMemDump_tomem), .PCtoReg_tomem(PCtoReg_tomem), .MemtoReg_tomem(MemtoReg_tomem), .Cond_tomem(Cond_tomem), .Set_tomem(Set_tomem), .instructout(MemInstr), .RegWrite_tomem(RegWrite_tomem), .RegDst_tomem(RegDst_tomem), .Halt_tomem(Halt_tomem),
 		//Inputs
 		.PCInc(PCInc_toex), .ALUOut(ALUOut), .ReadData2(ReadData2_toex), .DMemWrite(DMemWrite_toex), .DMemEn(DMemEn_toex), .Halt(Halt_toex),
-		.DMemDump(DMemDump_toex), .PCtoReg(PCtoReg_toex), .MemtoReg(MemtoReg_toex), .Cond(Cond_toex), .Set(Set_toex), .clk(clk), .en(~Dmem_Stall), .rst(rst), .instructin(ExInstr), .RegWrite(RegWrite_toex), .RegDst(RegDst_toex), .stall(exex_stall_toex)
+		.DMemDump(DMemDump_toex), .PCtoReg(PCtoReg_toex), .MemtoReg(MemtoReg_toex), .Cond(Cond_toex), .Set(Set_toex), .clk(clk), .en(~Dmem_Stall), .rst(rst), .instructin(ExInstr), .RegWrite(RegWrite_toex), .RegDst(RegDst_toex), .stall(~En)
 		);
 
 	// Instantiate the memory stage
