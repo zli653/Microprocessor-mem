@@ -98,7 +98,7 @@ module cache_fsm(
 	// c_sel is 1, choose way 2
 	assign c_err = c_sel ? c_err_2 : c_err_1;
 	assign c_sel = (idle) ? (~c_valid_1 ? 1'b0 : 
-			(c_valid_2 ? curr_rand : 1'b1) ) :
+			(c_valid_2 ? curr_rand : 1'b1) ) : 
 				// TODO: only for optimization
 				// both are valid, cannot be both hit
 				// both are valid, if one is hit, choose the one is hit

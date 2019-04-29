@@ -87,7 +87,5 @@ module idex (
 	dff_wrapper df29(.q(BrSel_toex[1]), .d(BrSel[1]), .en(en), .clk(clk), .rst(rst));
 	dff_wrapper df30(.q(BrSel_toex[2]), .d(BrSel[2]), .en(en), .clk(clk), .rst(rst));
 	
-	assign int_B = (~St & fwd_B[1]) ? data_exmem : (~St & fwd_B[0]) ? data_memwb : int_B_int;
-
 	assign instructout =  (rst) ? 16'b0000100000000000 : instructInt;
 endmodule

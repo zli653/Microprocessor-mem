@@ -124,10 +124,13 @@ module cache_fsm_wrapper(
 				next_state = (m_busy[0]) ? 4'b0001 : 4'b0011; // EVICT_2
 
 				// Read from cache word 0 
-				fc_enable = ({c_hit, c_valid, c_dirty} == 3'b011) ? 1'b1 : 1'b0;
+				/*fc_enable = ({c_hit, c_valid, c_dirty} == 3'b011) ? 1'b1 : 1'b0;
 				fc_tag_in = ({c_hit, c_valid, c_dirty} == 3'b011) ? c_tag_out : 3'd0;
-				fc_index = ({c_hit, c_valid, c_dirty} == 3'b011) ? addr[10:3] : 8'd0;
-				
+				fc_index = ({c_hit, c_valid, c_dirty} == 3'b011) ? addr[10:3] : 8'd0;*/
+			        fc_enable = 1'b1;
+			        fc_tag_in = c_tag_out;
+				fc_index = addr[10:3];
+				fc_offset = 1'b0;
 			end	
 
 			4'b1000: // MEM_ACC_1

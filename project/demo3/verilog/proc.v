@@ -117,7 +117,7 @@ module proc (/*AUTOARG*/
 	// Instantiate the decode stage
 	decode DecodeStage(.rst(rst), .clk(clk), .instruct(DecInstrOut), .wb(wb), .ReadData2(ReadData2), .EffReadData1(EffReadData1), .Imm(Imm), .err(err_decode), .DMemWrite(DMemWrite), .DMemEn(DMemEn), .Btr(Btr),
 	       .ALUSrc2(ALUSrc2), .PCSrc(PCSrc), .MemtoReg(MemtoReg), .DMemDump(DMemDump), .Jump(Jump), .PCImm(PCImm), .PCtoReg(PCtoReg), .InvA(InvA), .InvB(InvB), .Sign(Sign), .Cin(Cin), .Op(Op), .PCInc(PCIncOut),
-		.fwd_A(fwd_A_todec), .fwd_B(fwd_B_todec), .data_exmem(ALUOut), .data_memwb(data_memwb_todec),
+		.fwd_A(fwd_A_todec&PCSrc), .fwd_B(fwd_B_todec&PCSrc), .data_exmem(ALUOut), .data_memwb(data_memwb_todec),
 	       .Set(Set), .Halt(Halt), .Cond(Cond), .RegDstout(DecRegDstout), .RegWriteout(DecRegWriteout), .RegWrite_todec(RegWrite_todec)
        		, .RegDst_todec(RegDst_todec), .Lbi(Lbi), .WriteInstruct(WbInstr), .Branch_PC(Branch_PC), .Slbi(Slbi),.BrSel(BrSel));
 
