@@ -130,7 +130,7 @@ module cache_fsm_wrapper(
 			        fc_enable = 1'b1;
 			        fc_tag_in = c_tag_out;
 				fc_index = addr[10:3];
-				fc_offset = 1'b0;
+				fc_offset = 3'b000;
 			end	
 
 			4'b1000: // MEM_ACC_1
