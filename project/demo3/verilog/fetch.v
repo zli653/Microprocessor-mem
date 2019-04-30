@@ -42,6 +42,7 @@ module fetch (
 
 	assign mux1_ctrl = PCImm | Jump | (PCSrc & Cond);
 	assign mux1_out = mux1_ctrl ? Branch_PC : PCInc;
+	//assign mux2_out = (Halt | ((~En | (Stall|Dmem_Stall)) & ~mux1_ctrl)) ? PCIn : mux1_out;
 	assign mux2_out = (~En | Halt | ((Stall|Dmem_Stall) & ~mux1_ctrl)) ? PCIn : mux1_out;
 	assign PCCur = rst ? 16'h0000 : mux2_out;
 	
