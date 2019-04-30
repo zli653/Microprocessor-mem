@@ -103,7 +103,7 @@ module proc (/*AUTOARG*/
 
 	// Forwarding
 	wire [1:0] fwd_A_toex, fwd_B_toex, fwd_A_todec, fwd_B_todec;
-	wire [15:0] data_memwb_todec, data_memwb_toex;
+	wire [15:0] data_memwb_todec, data_memwb_toex, int_B_cmp;
 	wire exex_stall_todec, exex_stall_toex;
 
 	wire [2:0] BrSel, BrSel_toex;
@@ -148,7 +148,7 @@ module proc (/*AUTOARG*/
 		.ALUSrc2(ALUSrc2), .Btr(Btr), .ReadData2(ReadData2), .EffReadData1(EffReadData1),
 		.Imm(Imm), .DMemWrite(DMemWrite), .DMemEn(DMemEn), .DMemDump(DMemDump), .PCtoReg(PCtoReg),
 		.MemtoReg(MemtoReg), .Cond(Cond), .Set(Set), .clk(clk), .En(1'b1), .en(~Dmem_Stall&En), .rst(rst), .instructin(DecInstrOut), .RegWrite(DecRegWriteout), .RegDst(DecRegDstout),
-		.PCImm_toex(PCImm_toex), .Slbi(Slbi), .BrSel(BrSel)
+		.PCImm_toex(PCImm_toex), .Slbi(Slbi), .BrSel(BrSel), .int_B_cmp(int_B_cmp), .stall(~En)
 		
 	);
 
@@ -159,7 +159,7 @@ module proc (/*AUTOARG*/
 		.OpCode(Op_toex), .ALUSrc2(ALUSrc2_toex), .ReadDataA(EffReadData1_toex), .ReadDataB(ReadData2_ex), .Imm(Imm_toex),
 	       .PCtoReg(PCtoReg_toex), .Cond(Cond_toex), .Set(Set_toex), .PCInc(PCInc_toex),
 		.fwd_A(fwd_A_toex), .fwd_B(fwd_B_toex), .data_exmem(ALUOut_tomem), .data_memwb(data_memwb_toex), .ReadData2(ReadData2_toex), 
-		.Lbi(Lbi_toex), .Slbi(Slbi_toex), .BrSel(BrSel_toex), .St(St));
+		.Lbi(Lbi_toex), .Slbi(Slbi_toex), .BrSel(BrSel_toex), .St(St), .int_B_cmp(int_B_cmp));
 
 
 	// Forwarding Unit

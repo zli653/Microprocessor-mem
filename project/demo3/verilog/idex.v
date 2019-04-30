@@ -8,7 +8,7 @@ module idex (
 	//Inputs
 	//
 
-	InvA, InvB, Sign, Cin, Op, Halt, PCInc, en,
+	InvA, InvB, Sign, Cin, Op, Halt, PCInc, en, int_B_cmp, stall,
         ALUSrc2, Btr, ReadData2, EffReadData1,
         Imm, DMemWrite, DMemEn, DMemDump, PCtoReg,
         MemtoReg, Cond, Set, clk, En, rst, instructin, RegDst, RegWrite, PCImm, Lbi, Slbi, BrSel
@@ -23,16 +23,16 @@ module idex (
 	RegWrite_toex, Halt_toex, PCImm_toex, Lbi_toex, Slbi_toex;
 	output [2:0] BrSel_toex; 
 
-	input [15:0] ReadData2, EffReadData1, Imm, instructin, PCInc;
+	input [15:0] ReadData2, EffReadData1, Imm, instructin, PCInc, int_B_cmp;
 	input [2:0] Op;
 	input [1:0] RegDst;
-	input InvA, InvB, Sign, Cin, ALUSrc2, Btr,
+	input InvA, InvB, Sign, Cin, ALUSrc2, Btr, stall,
         DMemWrite, DMemEn, DMemDump, PCtoReg,
         MemtoReg, Cond, Set, clk, En, rst,
 	RegWrite, Halt, en, Lbi, PCImm, Slbi;
 	input [2:0] BrSel;
 
-	wire [15:0] instructInt;
+	wire [15:0] instructInt, ReadData2_int;
 	wire RegWrite_toex_int;
 	wire DMemWrite_toex_int;
 	wire DMemEn_toex_int;
@@ -42,9 +42,11 @@ module idex (
  	assign RegWrite_toex_int = En & RegWrite; 
  	assign DMemWrite_toex_int = En & DMemWrite; 
  	assign Halt_toex_int = Halt;
+	
+	assign ReadData2_int = stall ? int_B_cmp : ReadData2;
 
 	//assign DMemEn_toex_int = En ? DMemEn : 1'b0; 
-	reg_16b_wrapper r1(.writeData(ReadData2), .clk(clk), .rst(rst), .en(en), .readData(ReadData2_toex));
+	reg_16b_wrapper r1(.writeData(ReadData2_int), .clk(clk), .rst(rst), .en(en|stall), .readData(ReadData2_toex));
 	reg_16b_wrapper r2(.writeData(EffReadData1), .clk(clk), .rst(rst), .en(en), .readData(EffReadData1_toex));
 	reg_16b_wrapper r3(.writeData(Imm), .clk(clk), .rst(rst), .en(en), .readData(Imm_toex));
 	reg_16b_wrapper r4(.writeData(PCInc), .clk(clk), .rst(rst), .en(en), .readData(PCInc_toex));

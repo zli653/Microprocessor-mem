@@ -2,7 +2,7 @@ module cache_fsm_wrapper(
 		// Inputs
 		addr,data_in,read,write,rst,
 		c_tag_out,c_data_out,c_hit,c_dirty,c_valid,c_err,
-		m_data_out,m_busy,m_err,state_int,data_prev,
+		m_data_out,m_busy,m_err,state_int,data_prev, clk,
 
 		// Outputs	
 		fc_enable,fc_tag_in,fc_index,fc_offset,fc_data_in,fc_comp,fc_write,fc_valid_in,
@@ -18,7 +18,7 @@ module cache_fsm_wrapper(
 	input [15:0] addr,data_in,c_data_out,m_data_out;
 	input [4:0] c_tag_out;
 	input [3:0] m_busy;
-	input c_hit,c_dirty,c_valid,c_err,m_err,read,write,rst;
+	input c_hit,c_dirty,c_valid,c_err,m_err,read,write,rst, clk;
 		
 	// Outputs	
 	output reg [15:0] fm_addr,fm_data_in,fs_data_out,fc_data_in;
@@ -59,8 +59,11 @@ module cache_fsm_wrapper(
 	* 	MEM_ACC_6 :	1101
 	* 	ACC_WRITE :     1110
 	*/
+	wire [15:0] c_data_out_int;
 
-        assign data_int = write ? data_in : 
+	reg_16b reg_7 (.writeData(c_data_out), .clk(clk), .rst(rst), .readData(c_data_out_int));
+        
+	assign data_int = write ? data_in : 
 			  ~read ? 16'd0 :
 			  ({addr[2:1],1'b1} == read_offset) ? m_data_out :
 			  data_prev;
@@ -225,7 +228,7 @@ module cache_fsm_wrapper(
 				fm_wr = 1'b1;
 				fm_rd = 1'b0;
 				fm_addr = {c_tag_out, addr[10:3], 3'b000}; // bank 0
-				fm_data_in = c_data_out;
+				fm_data_in = c_data_out_int;
 			end
 
 
@@ -240,7 +243,7 @@ module cache_fsm_wrapper(
 				fm_wr = 1'b1;
 				fm_rd = 1'b0;
 				fm_addr = {c_tag_out, addr[10:3], 3'b010}; // bank 1
-				fm_data_in = c_data_out;
+				fm_data_in = c_data_out_int;
 			end	
 			
 			4'b0101: // EVICT_4
@@ -254,7 +257,7 @@ module cache_fsm_wrapper(
 				// Write to mem
 				fm_wr = 1'b1;
 				fm_addr = {c_tag_out, addr[10:3], 3'b100}; 
-				fm_data_in = c_data_out;
+				fm_data_in = c_data_out_int;
 			end
 
 			4'b0110: // EVICT_4
@@ -264,7 +267,7 @@ module cache_fsm_wrapper(
 				// Write to mem
 				fm_wr = 1'b1;
 				fm_addr = {c_tag_out, addr[10:3], 3'b110}; 
-				fm_data_in = c_data_out;
+				fm_data_in = c_data_out_int;
 			end
 
 			4'b1110: // ACC_WRITE

@@ -179,7 +179,7 @@ module cache_fsm(
 	                // Inputs
 	                .addr(addr),.data_in(data_in),.read(read),.write(write),.rst(rst),
 	                .c_tag_out(c_tag_out),.c_data_out(c_data_out),.c_hit(c_hit),.c_dirty(c_dirty),.c_valid(c_valid),.c_err(c_err),
-	                .m_data_out(m_data_out),.m_busy(m_busy),.m_err(m_err),.state_int(state_int),.data_prev(data_prev),
+	                .m_data_out(m_data_out),.m_busy(m_busy),.m_err(m_err),.state_int(state_int),.data_prev(data_prev), .clk(clk),
 
 	                // Outputs
 	                .fc_enable(fc_enable),.fc_tag_in(fc_tag_in),.fc_index(fc_index),.fc_offset(fc_offset),.fc_data_in(fc_data_in),.fc_comp(fc_comp),.fc_write(fc_write),.fc_valid_in(fc_valid_in),

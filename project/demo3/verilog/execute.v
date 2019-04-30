@@ -1,6 +1,6 @@
 module execute (
 	//Ouputs
-	err, ALUOut, Zero, Ofl, Btr, ReadData2,
+	err, ALUOut, Zero, Ofl, Btr, ReadData2, int_B_cmp,
 	//Inputs
 	clk, rst, invA, invB, Sign, Cin, OpCode, ALUSrc2, ReadDataA, ReadDataB, Imm, fwd_A, fwd_B, data_exmem, data_memwb,
 	PCtoReg, Cond, Set, PCInc, Lbi, Slbi, BrSel, St	
@@ -29,7 +29,7 @@ module execute (
 	output [15:0] ALUOut;
 	output Zero;
 	output Ofl;
-	output [15:0] ReadData2;
+	output [15:0] ReadData2, int_B_cmp;
 
 	wire [15:0] int_B, int_rev, int_alu, int_B_int, int_A;
 	wire [15:0] ALUOut_1, ALUOut_2;
@@ -49,7 +49,7 @@ module execute (
 	assign EffReadDataA = (Slbi == 1'b1) ? int_shifted : int_lbi;
 
 	// Condition logic
-	wire [15:0] int_B_cmp;
+	//wire [15:0] int_B_cmp;
 	wire Eff_Cond;
 	assign int_B_cmp = fwd_B[1] ? data_exmem : fwd_B[0] ? data_memwb : ReadDataB;
 	cmper condition(.A(int_A), .B(int_B_cmp), .c_bsel(BrSel), .cond(Eff_Cond));	
