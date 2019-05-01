@@ -1,14 +1,14 @@
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/ldld_rand_large.asm FAILED
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/ldld_rand_small.asm FAILED
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/ldst_rand_large.asm FAILED
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/ldst_rand_small.asm FAILED
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/ldld_rand_large.asm SUCCESS CPI:2.2 CYCLES:2261 ICOUNT:1035 IHITRATE: 99.8 DHITRATE: 96.8
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/ldld_rand_small.asm SUCCESS CPI:2.2 CYCLES:2261 ICOUNT:1035 IHITRATE: 99.8 DHITRATE: 96.8
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/ldst_rand_large.asm SUCCESS CPI:10.6 CYCLES:32 ICOUNT:3 IHITRATE: 60.0 DHITRATE: 0.0
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/ldst_rand_small.asm SUCCESS CPI:10.6 CYCLES:32 ICOUNT:3 IHITRATE: 60.0 DHITRATE: 0.0
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_100_all.asm SUCCESS CPI:3.9 CYCLES:1226 ICOUNT:314 IHITRATE: 70.7 DHITRATE: 70.4
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_100_ctrl.asm SUCCESS CPI:3.9 CYCLES:1684 ICOUNT:436 IHITRATE: 69.3 DHITRATE: 71.8
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_100_icache.asm SUCCESS CPI:21.0 CYCLES:252 ICOUNT:12 IHITRATE: 21.1 DHITRATE: 0
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_100_idcache.asm SUCCESS CPI:6.5 CYCLES:508 ICOUNT:78 IHITRATE: 59.5 DHITRATE: 34.8
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_100_mem.asm SUCCESS CPI:4.1 CYCLES:2748 ICOUNT:668 IHITRATE: 78.8 DHITRATE: 90.4
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_101_all.asm SUCCESS CPI:3.7 CYCLES:1574 ICOUNT:422 IHITRATE: 70.6 DHITRATE: 71.4
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_101_ctrl.asm FAILED
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_101_ctrl.asm SUCCESS CPI:3.6 CYCLES:1837 ICOUNT:515 IHITRATE: 72.8 DHITRATE: 71.9
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_101_icache.asm SUCCESS CPI:5.0 CYCLES:294 ICOUNT:59 IHITRATE: 57.9 DHITRATE: 0
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_101_idcache.asm SUCCESS CPI:6.6 CYCLES:477 ICOUNT:72 IHITRATE: 62.5 DHITRATE: 35.0
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_101_mem.asm SUCCESS CPI:4.1 CYCLES:2730 ICOUNT:673 IHITRATE: 78.6 DHITRATE: 90.8
@@ -88,7 +88,7 @@
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_116_icache.asm SUCCESS CPI:28.4 CYCLES:256 ICOUNT:9 IHITRATE: 11.4 DHITRATE: 0
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_116_idcache.asm SUCCESS CPI:4.8 CYCLES:618 ICOUNT:130 IHITRATE: 62.0 DHITRATE: 43.8
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_116_mem.asm SUCCESS CPI:4.0 CYCLES:2660 ICOUNT:660 IHITRATE: 79.1 DHITRATE: 89.2
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_117_all.asm FAILED
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_117_all.asm SUCCESS CPI:3.6 CYCLES:1618 ICOUNT:445 IHITRATE: 73.6 DHITRATE: 66.0
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_117_ctrl.asm SUCCESS CPI:3.6 CYCLES:1869 ICOUNT:521 IHITRATE: 71.6 DHITRATE: 69.6
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_117_icache.asm SUCCESS CPI:11.6 CYCLES:267 ICOUNT:23 IHITRATE: 38.8 DHITRATE: 0
 /u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_final/t_117_idcache.asm SUCCESS CPI:7.0 CYCLES:662 ICOUNT:94 IHITRATE: 57.0 DHITRATE: 29.6
