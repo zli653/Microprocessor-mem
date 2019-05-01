@@ -122,20 +122,7 @@ module proc (/*AUTOARG*/
        		, .RegDst_todec(RegDst_todec), .Lbi(Lbi), .WriteInstruct(WbInstr), .Branch_PC(Branch_PC), .Slbi(Slbi),.BrSel(BrSel));
 
 
-	 // Hazard detection unit
-/*        hazard HazardUnit(.rst(rst), .clk(clk),
-                //Inputs
-                .DecInstruct(DecInstrOut), .ExInstruct(ExInstr), .ExRegWrite(RegWrite_toex), .ExRegDst(RegDst_toex)
-                , .MemInstruct(MemInstr), .MemRegWrite(RegWrite_tomem), .MemRegDst(RegDst_tomem)
-                , .WbInstruct(WbInstr), .WbRegWrite(RegWrite_todec), .WbRegDst(RegDst_todec)
-		, .ALUSrc2(ALUSrc2), .DMemWrite(DMemWrite), .PCImm(PCImm), .Lbi(Lbi), .Set(Set),        	
-
-		//Outputs
-                .En(En)
-                );*/
-
 	assign En = ~(((PCSrc | Jump) & exex_stall_todec) | exex_stall_toex);
-//	assign En = ~((PCSrc & exex_stall_todec) | exex_stall_toex);
 
 	//Instantiate Decode To Execute Pipeline
 	idex decToEx(
