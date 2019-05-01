@@ -60,9 +60,15 @@ module cache_fsm_wrapper(
 	* 	ACC_WRITE :     1110
 	*/
 	wire [15:0] c_data_out_int;
+	wire [4:0] c_tag_out_int;
 
 	reg_16b reg_7 (.writeData(c_data_out), .clk(clk), .rst(rst), .readData(c_data_out_int));
-        
+        dff b_0 (.d(c_tag_out[0]), .clk(clk), .rst(rst), .q(c_tag_out_int[0]));
+        dff b_1 (.d(c_tag_out[1]), .clk(clk), .rst(rst), .q(c_tag_out_int[1]));
+        dff b_2 (.d(c_tag_out[2]), .clk(clk), .rst(rst), .q(c_tag_out_int[2]));
+        dff b_3 (.d(c_tag_out[3]), .clk(clk), .rst(rst), .q(c_tag_out_int[3]));
+        dff b_4 (.d(c_tag_out[4]), .clk(clk), .rst(rst), .q(c_tag_out_int[4]));
+
 	assign data_int = write ? data_in : 
 			  ~read ? 16'd0 :
 			  ({addr[2:1],1'b1} == read_offset) ? m_data_out :
@@ -131,7 +137,7 @@ module cache_fsm_wrapper(
 				fc_tag_in = ({c_hit, c_valid, c_dirty} == 3'b011) ? c_tag_out : 3'd0;
 				fc_index = ({c_hit, c_valid, c_dirty} == 3'b011) ? addr[10:3] : 8'd0;*/
 			        fc_enable = 1'b1;
-			        fc_tag_in = c_tag_out;
+			        fc_tag_in = c_tag_out_int;
 				fc_index = addr[10:3];
 				fc_offset = 3'b000;
 			end	
@@ -221,13 +227,13 @@ module cache_fsm_wrapper(
 				next_state = 4'b0100; // EVICT_3
 				fc_enable = 1'b1;
 				fc_index = addr[10:3];
-				fc_tag_in = c_tag_out;
+				fc_tag_in = c_tag_out_int;
 				fc_offset = 3'b010; // Read word 1
 				
 				// Write to mem
 				fm_wr = 1'b1;
 				fm_rd = 1'b0;
-				fm_addr = {c_tag_out, addr[10:3], 3'b000}; // bank 0
+				fm_addr = {c_tag_out_int, addr[10:3], 3'b000}; // bank 0
 				fm_data_in = c_data_out_int;
 			end
 
@@ -237,12 +243,12 @@ module cache_fsm_wrapper(
 				next_state = m_busy[1] ? 4'b0100 : 4'b0101;
 				fc_enable = 1'b1;
 				fc_index = addr[10:3];
-				fc_tag_in = c_tag_out;
+				fc_tag_in = c_tag_out_int;
 				fc_offset = 3'b100;
 				
 				fm_wr = 1'b1;
 				fm_rd = 1'b0;
-				fm_addr = {c_tag_out, addr[10:3], 3'b010}; // bank 1
+				fm_addr = {c_tag_out_int, addr[10:3], 3'b010}; // bank 1
 				fm_data_in = c_data_out_int;
 			end	
 			
@@ -251,12 +257,12 @@ module cache_fsm_wrapper(
 				next_state = (m_busy[2]) ? 4'b0101 : 4'b0110;
 				fc_enable = 1'b1;
 				fc_index = addr[10:3];
-				fc_tag_in = c_tag_out;
+				fc_tag_in = c_tag_out_int;
 				fc_offset = 3'b110; // Read word 3 
 				
 				// Write to mem
 				fm_wr = 1'b1;
-				fm_addr = {c_tag_out, addr[10:3], 3'b100}; 
+				fm_addr = {c_tag_out_int, addr[10:3], 3'b100}; 
 				fm_data_in = c_data_out_int;
 			end
 
@@ -266,7 +272,7 @@ module cache_fsm_wrapper(
 				
 				// Write to mem
 				fm_wr = 1'b1;
-				fm_addr = {c_tag_out, addr[10:3], 3'b110}; 
+				fm_addr = {c_tag_out_int, addr[10:3], 3'b110}; 
 				fm_data_in = c_data_out_int;
 			end
 

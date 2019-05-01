@@ -89,11 +89,12 @@ module proc_hier_pbench();
          if (RegWrite) begin
             $fdisplay(trace_file,"REG: %d VALUE: 0x%04x",
                       WriteRegister,
-                      WriteData );            
+                      WriteData );
+  	    	      
          end
          if (MemRead) begin
             $fdisplay(trace_file,"LOAD: ADDR: 0x%04x VALUE: 0x%04x",
-                      MemAddress, MemDataOut );
+                      MemAddress, MemDataOut);
          end
 
          if (MemWrite) begin
